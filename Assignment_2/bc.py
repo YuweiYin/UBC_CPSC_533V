@@ -1,4 +1,6 @@
 import os
+import time
+
 import numpy as np
 import torch
 from torch.utils import data
@@ -31,8 +33,6 @@ model = MyModel(state_size=env.observation_space.shape[0], action_size=env.actio
 
 
 def train_behavioral_cloning():
-    import time
-
     timer_start = time.perf_counter()
 
     # TODO CHOOSE A OPTIMIZER AND A LOSS FUNCTION FOR TRAINING YOUR NETWORK

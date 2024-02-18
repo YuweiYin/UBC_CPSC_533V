@@ -1,5 +1,5 @@
+import os
 import time
-import math
 import random
 from itertools import count
 
@@ -78,8 +78,6 @@ def optimize_model(state, action, next_state, reward, done):
 
 
 def train_reinforcement_learning(render=False):
-    import time
-
     timer_start = time.perf_counter()
 
     steps_done = 0
