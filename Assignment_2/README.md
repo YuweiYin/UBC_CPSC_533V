@@ -2,9 +2,9 @@
 
 - [Assignment 2 Jupyter Notebook](./hw2_Tabular_DQN-Yuwei_Yin.ipynb)
 
-## Environment (Linux; macOS)
+## 1. Environment (Linux; macOS)
 
-### Miniconda3
+### 1.1. Miniconda3
 
 ```bash
 # https://docs.conda.io/projects/miniconda/en/latest/
@@ -19,7 +19,7 @@ rm -rf ~/miniconda3/miniconda.sh
 
 Then, reopen the terminal.
 
-### Python3 Virtual Environments
+### 1.2. Python3 Virtual Environments
 
 Now, create the conda venv (do not use the most-updated Python3 version):
 
@@ -28,15 +28,15 @@ conda create -n 533v -y python=3.10
 conda activate 533v
 ```
 
-### Python3 Packages
+### 1.3. Python3 Packages
 
 ```bash
 pip install -r requirements.txt
 ```
 
-## Run the code
+## 2. Run the code
 
-### Jupyter Notebook
+### 2.1. Jupyter Notebook
 
 ```bash
 jupyter notebook
@@ -44,36 +44,36 @@ jupyter notebook
 
 Run `HW2_Tabular_DQN-Yuwei_Yin.ipynb`
 
-### Behavioral Cloning
+### 2.2. Behavioral Cloning
 
 ```bash
 python3 bc.py
 #python3 bc.py > log/bc.log
 ```
 
-### Deep Q Learning (without Replay Memory)
+### 2.3. Deep Q Learning (without Replay Memory)
 
 ```bash
 python3 dqn.py
 #python3 dqn.py > log/dqn.log
 ```
 
-### Deep Q Learning (with Replay Memory)
+### 2.4. Deep Q Learning (with Replay Memory)
 
 ```bash
 python3 dqn_replay.py
 #python3 dqn_replay.py > log/dqn_replay.log
 ```
 
-## Experimental Results
+## 3. Experimental Results
 
-### Training Logs
+### 3.1. Training Logs
 
 - **Behavioral Cloning**: [bc.log](./log/bc.log)
 - **Deep Q Learning (without Replay Memory)**: [dqn.log](./log/dqn.log)
 - **Deep Q Learning (with Replay Memory)**: [dqn_replay.log](./log/dqn_replay.log)
 
-### Evaluation
+### 3.2. Evaluation
 
 - **Behavioral Cloning**:
 ```bash
