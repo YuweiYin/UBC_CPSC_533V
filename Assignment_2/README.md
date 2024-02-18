@@ -1,6 +1,7 @@
 # UBC CPSC 532V (2023W2) Assignment 2
 
-- [Assignment 2 Jupyter Notebook](./hw2_Tabular_DQN-Yuwei_Yin.ipynb)
+- Assignment 2: [Task](./hw2_Tabular_DQN.ipynb) and [GitHub](https://github.com/UBCMOCCA/CPSC533V_2023W2/tree/main/A2)
+- [Assignment 2 Jupyter Notebook - Yuwei Yin](./hw2_Tabular_DQN-Yuwei_Yin.ipynb)
 
 ## 1. Environment (Linux; macOS)
 
