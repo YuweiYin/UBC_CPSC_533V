@@ -1,0 +1,8 @@
+numpy
+gym
+gymnasium
+torch
+pygame
+notebook
+ipdb
+scipy
