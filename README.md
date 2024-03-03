@@ -8,5 +8,6 @@ UBC CPSC 533V Topics in Computer Graphics - LEARNING TO MOVE (2023W2 Term)
 
 - [Assignment 1](./Assignment_1/)
 - [Assignment 2](./Assignment_2/)
+- [Assignment 3](./Assignment_3/)
 
 ---

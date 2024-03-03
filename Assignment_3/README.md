@@ -1,7 +1,7 @@
 # UBC CPSC 532V (2023W2) Assignment 3
 
 - Assignment 3: [Task](./hw3_policy_gradients.ipynb) and [GitHub](https://github.com/UBCMOCCA/CPSC533V_2023W2/tree/main/A3)
-- [Assignment 3 Jupyter Notebook - Yuwei Yin](./hw3_policy_gradients-JC_YY.ipynb)
+- [Assignment 3 Jupyter Notebook](./hw3_policy_gradients-JC_YY.ipynb) - [Juntai Cao](https://github.com/juntaic7) and [Yuwei Yin](https://github.com/YuweiYin)
 
 ## 1. Environment (Linux; macOS)
 
