@@ -50,8 +50,13 @@ def main():
         # Policy loss
         if args.loss_mode == "vpg":
             # TODO (Task 2): implement vanilla policy gradient loss
+            loss_pi = -(logp * psi).mean()
         elif args.loss_mode == "ppo":
             # TODO (Task 4): implement clipped PPO loss
+            ratio = torch.exp(logp - logp_old)
+            surr1 = ratio * psi
+            surr2 = torch.clamp(ratio, min=1 - args.clip_ratio, max=1 + args.clip_ratio) * psi
+            loss_pi = -(torch.minimum(surr1, surr2)).mean()
         else:
             raise Exception("Invalid loss_mode option", args.loss_mode)
 
@@ -67,6 +72,7 @@ def main():
         obs, ret = batch["obs"], batch["ret"]
         v = ac.v(obs)
         # TODO: (Task 2): compute value function loss
+        loss_v = ((v - ret.unsqueeze(1)) ** 2).mean()
         return loss_v
 
     # Set up optimizers for policy and value function
@@ -123,16 +129,17 @@ def main():
             if ep_count % 100 == 0:
                 frame = env.render()
                 # uncomment this line if you want to log to tensorboard (can be memory intensive)
-                #gif_frames.append(frame)
-                #gif_frames.append(PIL.Image.fromarray(frame).resize([64,64]))  # you can try this downsize version if you are resource constrained
+                # gif_frames.append(frame)
+                # gif_frames.append(PIL.Image.fromarray(frame).resize([64,64]))
+                # you can try this downsize version if you are resource constrained
                 time.sleep(0.01)
-            
+
             # Update obs (critical!)
             o = next_o
 
             timeout = ep_len == args.max_ep_len
             terminal = d or truncated or timeout
-            epoch_ended = t==steps_per_epoch-1
+            epoch_ended = t == steps_per_epoch - 1
 
             if terminal or epoch_ended:
                 # if trajectory did not reach terminal state, bootstrap value target
@@ -202,7 +209,7 @@ if __name__ == "__main__":
 
     parser.add_argument("--suffix", type=str, default="", help="Just for experiment logging (see utils)")
     parser.add_argument("--prefix", type=str, default="logs", help="Just for experiment logging (see utils)")
-    
+
     args = parser.parse_args()
 
     torch.manual_seed(args.seed)
