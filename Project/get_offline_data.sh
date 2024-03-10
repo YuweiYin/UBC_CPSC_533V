@@ -5,6 +5,7 @@ echo -e ">>> Get ALL Offline RL Data (downloading and parsing trajectories)\n\n"
 LOG_DIR="log"
 mkdir -p "${LOG_DIR}"
 
+conda activate 533v
 python3 get_offline_data.py --task "download" > "${LOG_DIR}/download_all.log"
 
 parse_nohup(){
