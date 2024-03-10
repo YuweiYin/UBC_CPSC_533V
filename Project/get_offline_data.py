@@ -184,7 +184,7 @@ def parse_offline_data():
 
                 save_parsed_fp = os.path.join(save_parsed_dir, f"{ds_fn}.pkl")
                 logger.info(f">>> Done {ds_fn}. Save the trajectories to {save_parsed_fp}")
-                with open(save_parsed_fp, "wb", encoding="utf-8") as f_out:
+                with open(save_parsed_fp, "wb") as f_out:
                     pickle.dump(trajectories, f_out)
 
 

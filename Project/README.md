@@ -99,7 +99,8 @@ the `states` and `observations` remain in the same dimension and corresponding m
 
 ```bash
 #brew install wget  # to use `wget` on macOS
-python3 get_offline_data.py
+#python3 get_offline_data.py
+bash get_offline_data.sh
 ```
 
 Specify the download or parsing task by passing the `--task` parameter:
