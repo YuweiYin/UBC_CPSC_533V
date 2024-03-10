@@ -9,8 +9,17 @@ class MLPBCModel(TrajectoryModel):
     Simple MLP that predicts next action a from past states s.
     """
 
-    def __init__(self, state_dim, act_dim, hidden_size, n_layer, dropout=0.1, max_length=1, **kwargs):
-        super().__init__(state_dim, act_dim)
+    def __init__(
+            self,
+            state_dim,
+            action_dim,
+            hidden_size,
+            n_layer,
+            dropout=0.1,
+            max_length=1,
+            **kwargs
+    ):
+        super().__init__(state_dim, action_dim)
 
         self.hidden_size = hidden_size
         self.max_length = max_length
@@ -25,29 +34,48 @@ class MLPBCModel(TrajectoryModel):
         layers.extend([
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_size, self.act_dim),
+            nn.Linear(hidden_size, self.action_dim),
             nn.Tanh(),
         ])
 
         self.model = nn.Sequential(*layers)
 
     def forward(
-            self, states, actions, rewards,
-            returns_to_go=None, timesteps=None,
-            attention_mask=None, target_return=None,
+            self,
+            states,
+            actions,
+            rewards,
+            rewards_to_go=None,
+            timesteps=None,
+            attention_mask=None,
+            target_reward=None,
+            **kwargs
     ):
-
         states = states[:, -self.max_length:].reshape(states.shape[0], -1)  # concat states
-        actions = self.model(states).reshape(states.shape[0], 1, self.act_dim)
+        actions = self.model(states).reshape(states.shape[0], 1, self.action_dim)
 
         return None, actions, None
 
-    def get_action(self, states, actions, rewards, **kwargs):
+    def get_action(
+            self,
+            states,
+            actions,
+            rewards,
+            rewards_to_go=None,
+            timesteps=None,
+            **kwargs
+    ):
         states = states.reshape(1, -1, self.state_dim)
         if states.shape[1] < self.max_length:
             states = torch.cat(
-                [torch.zeros((1, self.max_length - states.shape[1], self.state_dim),
-                             dtype=torch.float32, device=states.device), states], dim=1)
+                [
+                    torch.zeros(
+                        (1, self.max_length - states.shape[1], self.state_dim),
+                        dtype=torch.float32, device=states.device
+                    ), states
+                ], dim=1
+            )
         states = states.to(dtype=torch.float32)
         _, actions, _ = self.forward(states, None, None, **kwargs)
+
         return actions[0, -1]

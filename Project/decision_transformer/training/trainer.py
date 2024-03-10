@@ -18,7 +18,6 @@ class Trainer:
         self.start_time = time.time()
 
     def train_iteration(self, num_steps, iter_num=0, print_logs=False):
-
         train_losses = []
         logs = dict()
 
@@ -58,11 +57,11 @@ class Trainer:
         return logs
 
     def train_step(self):
-        states, actions, rewards, dones, attention_mask, returns = self.get_batch(self.batch_size)
+        states, actions, rewards, dones, attention_mask, rewards = self.get_batch(self.batch_size)
         state_target, action_target, reward_target = torch.clone(states), torch.clone(actions), torch.clone(rewards)
 
         state_preds, action_preds, reward_preds = self.model.forward(
-            states, actions, rewards, masks=None, attention_mask=attention_mask, target_return=returns,
+            states, actions, rewards, masks=None, attention_mask=attention_mask, target_reward=rewards,
         )
 
         # note: currently indexing & masking is not fully correct

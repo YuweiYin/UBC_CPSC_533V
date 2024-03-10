@@ -8,10 +8,9 @@ import argparse
 import collections
 
 import numpy as np
-# import requests
 import h5py
-# import d4rl
 from data.data_infos import DATASET_URLS
+# import d4rl
 # import gym
 # import gymnasium as gym
 from transformers import set_seed
@@ -31,13 +30,13 @@ def download_offline_data():
 
     datasets = []
     assert isinstance(DATASET_URLS, dict)
-    for ds_name in args.datasets:
-        for ds_level in args.levels:
-            cur_ds = f"{ds_name}-{ds_level}-{args.version}"
-            if cur_ds in DATASET_URLS and isinstance(DATASET_URLS[cur_ds], str):  # has url
-                datasets.append(cur_ds)
+    for env_name in args.env_list:
+        for level in args.levels:
+            ds_name = f"{env_name}-{level}-{args.version}"
+            if ds_name in DATASET_URLS and isinstance(DATASET_URLS[ds_name], str):  # has url
+                datasets.append(ds_name)
             else:
-                logger.info(f">>> Key Error: dataset `{cur_ds}` not found")
+                logger.info(f">>> Key Error: dataset `{ds_name}` not found")
     logger.info(f">>> There are {len(datasets)} offline datasets to download.")
 
     save_raw_dir = os.path.join(args.save_dir, "raw")
@@ -71,32 +70,32 @@ def parse_offline_data():
     datasets = []
     ds_dict = dict()
     assert isinstance(DATASET_URLS, dict)
-    for ds_name in args.datasets:
-        ds_dict[ds_name] = dict()
+    for env_name in args.env_list:
+        ds_dict[env_name] = dict()
 
         # Set the env_name for Gymnasium
         # Although the offline dataset is from v2 env, we use v4 env for gym.make to avoid using mujoco-py (buggy)
         # https://github.com/Farama-Foundation/Gymnasium/blob/main/gymnasium/envs/mujoco/mujoco_py_env.py#L15
-        if ds_name == "halfcheetah":
-            ds_dict[ds_name]["env_name"] = f"HalfCheetah-v4"  # f"HalfCheetah-{args.version}"
-        elif ds_name == "walker2d":
-            ds_dict[ds_name]["env_name"] = f"Walker2d-v4"  # f"Walker2d-{args.version}"
-        elif ds_name == "hopper":
-            ds_dict[ds_name]["env_name"] = f"Hopper-v4"  # f"Hopper-{args.version}"
-        elif ds_name == "ant":
-            ds_dict[ds_name]["env_name"] = f"Ant-v4"  # f"Ant-{args.version}"
+        if env_name == "halfcheetah":
+            ds_dict[env_name]["gymnasium_env"] = f"HalfCheetah-v4"  # f"HalfCheetah-{args.version}"
+        elif env_name == "walker2d":
+            ds_dict[env_name]["gymnasium_env"] = f"Walker2d-v4"  # f"Walker2d-{args.version}"
+        elif env_name == "hopper":
+            ds_dict[env_name]["gymnasium_env"] = f"Hopper-v4"  # f"Hopper-{args.version}"
+        elif env_name == "ant":
+            ds_dict[env_name]["gymnasium_env"] = f"Ant-v4"  # f"Ant-{args.version}"
         else:
-            raise ValueError(f"ValueError: ds_name = {ds_name}")
+            raise ValueError(f"ValueError: env_name = {env_name}")
 
-        ds_dict[ds_name]["levels"] = []
-        for ds_level in args.levels:
-            cur_ds = f"{ds_name}-{ds_level}-{args.version}.hdf5"
-            if cur_ds in ds_fn_set:  # exist
-                datasets.append(cur_ds)
-                ds_dict[ds_name][ds_level] = cur_ds  # level values (filenames)
-                ds_dict[ds_name]["levels"].append(ds_level)  # level keys
+        ds_dict[env_name]["levels"] = []
+        for level in args.levels:
+            ds_name = f"{env_name}-{level}-{args.version}.hdf5"
+            if ds_name in ds_fn_set:  # exist
+                datasets.append(ds_name)
+                ds_dict[env_name][level] = ds_name  # level values (filenames)
+                ds_dict[env_name]["levels"].append(level)  # level keys
             else:
-                logger.info(f">>> Key Error: dataset `{cur_ds}` not found")
+                logger.info(f">>> Key Error: dataset `{ds_name}` not found")
     logger.info(f">>> There are {len(datasets)} offline datasets to parse.")
 
     save_parsed_dir = os.path.join(args.save_dir, "parsed")
@@ -104,8 +103,8 @@ def parse_offline_data():
         os.makedirs(save_parsed_dir, exist_ok=True)
 
     show_log = 100
-    for ds_name, ds_info in ds_dict.items():
-        # env_name = ds_info["env_name"]
+    for env_name, ds_info in ds_dict.items():
+        # gymnasium_env = ds_info["gymnasium_env"]
         ds_levels = ds_info["levels"]
         ds_fn_list = [ds_info[level] for level in ds_levels]
 
@@ -136,8 +135,8 @@ def parse_offline_data():
                 # logger.info(type(terminals[0]))  # <class "numpy.bool_">
                 # logger.info(type(timeouts[0]))  # <class "numpy.bool_">
 
-                # env = gym.make(env_name, render_mode=None)
-                # # env = gym.make(env_name, render_mode="human")
+                # env = gym.make(gymnasium_env, render_mode=None)
+                # # env = gym.make(gymnasium_env, render_mode="human")
                 # obs, info = env.reset(seed=args.seed)  # get first obs/state; set random seed for the env
                 # # dataset = env.get_dataset()  # d4rl get_dataset (https://github.com/Farama-Foundation/D4RL)
 
@@ -146,7 +145,7 @@ def parse_offline_data():
 
                 episode_step = 0
                 trajectories = []
-                n_tj = 0
+                n_traj = 0
                 trajectory_chunk = collections.defaultdict(list)
                 for i in range(n_samples):
                     done_bool = bool(terminals[i])
@@ -155,8 +154,8 @@ def parse_offline_data():
                     else:
                         final_timestep = (episode_step + 1) == args.max_len_trajectory
 
-                    trajectory_chunk["obs"].append(obs[i])
-                    trajectory_chunk["next_obs"].append(next_obs[i])
+                    trajectory_chunk["observations"].append(obs[i])
+                    trajectory_chunk["next_observations"].append(next_obs[i])
                     trajectory_chunk["actions"].append(actions[i])
                     trajectory_chunk["rewards"].append(rewards[i])
                     trajectory_chunk["terminals"].append(terminals[i])
@@ -166,9 +165,9 @@ def parse_offline_data():
                         for k in trajectory_chunk:
                             cur_trajectory[k] = np.array(trajectory_chunk[k])
                         trajectories.append(cur_trajectory)  # add this trajectory
-                        n_tj += 1
-                        if n_tj % show_log == 0:
-                            logger.info(f">>> >>> Parsing >>> {ds_fn}: {n_tj} trajectories")
+                        n_traj += 1
+                        if n_traj % show_log == 0:
+                            logger.info(f">>> >>> Parsing >>> {ds_fn}: {n_traj} trajectories")
 
                         episode_step = 0  # reset
                         trajectory_chunk = collections.defaultdict(list)  # reset
@@ -176,11 +175,11 @@ def parse_offline_data():
                     episode_step += 1
 
                 # Show statistics
-                tj_rewards = np.array([np.sum(tj["rewards"]) for tj in trajectories])
-                n_samples = np.sum([tj["rewards"].shape[0] for tj in trajectories])
+                traj_rewards = np.array([np.sum(traj["rewards"]) for traj in trajectories])
+                n_samples = np.sum([traj["rewards"].shape[0] for traj in trajectories])
                 logger.info(f"The number of collected samples: {n_samples}")
-                logger.info(f"Trajectory returns: mean = {np.mean(tj_rewards)}, std = {np.std(tj_rewards)}, "
-                            f"max = {np.max(tj_rewards)}, min = {np.min(tj_rewards)}")
+                logger.info(f"Trajectory rewards: mean = {np.mean(traj_rewards)}, std = {np.std(traj_rewards)}, "
+                            f"max = {np.max(traj_rewards)}, min = {np.min(traj_rewards)}")
 
                 save_parsed_fp = os.path.join(save_parsed_dir, f"{ds_fn}.pkl")
                 logger.info(f">>> Done {ds_fn}. Save the trajectories to {save_parsed_fp}")
@@ -201,10 +200,10 @@ if __name__ == "__main__":
     parser.add_argument("--save_dir", type=str, default="data", help="The directory to save data")
     parser.add_argument("--task", type=str, default="all",
                         help="Data task: \"all\", \"download\", \"parse\"")
-    parser.add_argument("--data", type=str, default="all",
-                        help="Dataset name: \"all\", \"halfcheetah\", \"walker2d\", \"hopper\", \"ant\"")
+    parser.add_argument("--env", type=str, default="all",
+                        help="Gym env name: \"all\", \"halfcheetah\", \"walker2d\", \"hopper\", \"ant\"")
     parser.add_argument("--level", type=str, default="all",
-                        help="Dataset name: \"all\", \"random\", \"medium\", \"expert\", "
+                        help="Dataset level: \"all\", \"random\", \"medium\", \"expert\", "
                              "\"medium-replay\", \"medium-expert\"")
     parser.add_argument("--version", type=str, default="v2",
                         help="Offline data version: \"v2\", \"v1\", \"v0\"")
@@ -229,12 +228,12 @@ if __name__ == "__main__":
     if not os.path.isdir(args.save_dir):
         os.makedirs(args.save_dir, exist_ok=True)
 
-    if args.data == "all":
-        args.datasets = ["halfcheetah", "hopper", "walker2d", "ant"]
-    elif isinstance(args.data, str):
-        args.datasets = [args.data]
+    if args.env == "all":
+        args.env_list = ["halfcheetah", "hopper", "walker2d", "ant"]
+    elif isinstance(args.env, str):
+        args.env_list = [args.env]
     else:
-        raise ValueError(f"ValueError: args.data = {args.data}")
+        raise ValueError(f"ValueError: args.env = {args.env}")
 
     if args.level == "all":
         args.levels = ["random", "medium", "expert", "medium-replay", "medium-expert"]

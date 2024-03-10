@@ -9,8 +9,8 @@ def evaluate_episode(
         model,
         max_ep_len=1000,
         device='cuda',
-        target_return=None,
-        mode='normal',
+        target_reward=None,
+        mode="normal",
         state_mean=0.,
         state_std=1.,
 ):
@@ -27,10 +27,10 @@ def evaluate_episode(
     states = torch.from_numpy(state).reshape(1, state_dim).to(device=device, dtype=torch.float32)
     actions = torch.zeros((0, act_dim), device=device, dtype=torch.float32)
     rewards = torch.zeros(0, device=device, dtype=torch.float32)
-    target_return = torch.tensor(target_return, device=device, dtype=torch.float32)
+    target_reward = torch.tensor(target_reward, device=device, dtype=torch.float32)
     # sim_states = []
 
-    episode_return, episode_length = 0, 0
+    episode_reward, episode_length = 0, 0
     for t in range(max_ep_len):
 
         # add padding
@@ -41,7 +41,7 @@ def evaluate_episode(
             (states.to(dtype=torch.float32) - state_mean) / state_std,
             actions.to(dtype=torch.float32),
             rewards.to(dtype=torch.float32),
-            target_return=target_return,
+            target_reward=target_reward,
         )
         actions[-1] = action
         action = action.detach().cpu().numpy()
@@ -52,13 +52,13 @@ def evaluate_episode(
         states = torch.cat([states, cur_state], dim=0)
         rewards[-1] = reward
 
-        episode_return += reward
+        episode_reward += reward
         episode_length += 1
 
         if done:
             break
 
-    return episode_return, episode_length
+    return episode_reward, episode_length
 
 
 def evaluate_episode_rtg(
@@ -71,7 +71,7 @@ def evaluate_episode_rtg(
         state_mean=0.,
         state_std=1.,
         device='cuda',
-        target_return=None,
+        target_reward=None,
         mode='normal',
 ):
     model.eval()
@@ -90,13 +90,13 @@ def evaluate_episode_rtg(
     actions = torch.zeros((0, act_dim), device=device, dtype=torch.float32)
     rewards = torch.zeros(0, device=device, dtype=torch.float32)
 
-    ep_return = target_return
-    target_return = torch.tensor(ep_return, device=device, dtype=torch.float32).reshape(1, 1)
+    ep_reward = target_reward
+    target_reward = torch.tensor(ep_reward, device=device, dtype=torch.float32).reshape(1, 1)
     timesteps = torch.tensor(0, device=device, dtype=torch.long).reshape(1, 1)
 
     # sim_states = []
 
-    episode_return, episode_length = 0, 0
+    episode_reward, episode_length = 0, 0
     for t in range(max_ep_len):
 
         # add padding
@@ -107,7 +107,7 @@ def evaluate_episode_rtg(
             (states.to(dtype=torch.float32) - state_mean) / state_std,
             actions.to(dtype=torch.float32),
             rewards.to(dtype=torch.float32),
-            target_return.to(dtype=torch.float32),
+            target_reward.to(dtype=torch.float32),
             timesteps.to(dtype=torch.long),
         )
         actions[-1] = action
@@ -120,19 +120,19 @@ def evaluate_episode_rtg(
         rewards[-1] = reward
 
         if mode != 'delayed':
-            pred_return = target_return[0, -1] - (reward / scale)
+            pred_reward = target_reward[0, -1] - (reward / scale)
         else:
-            pred_return = target_return[0, -1]
-        target_return = torch.cat(
-            [target_return, pred_return.reshape(1, 1)], dim=1)
+            pred_reward = target_reward[0, -1]
+        target_reward = torch.cat(
+            [target_reward, pred_reward.reshape(1, 1)], dim=1)
         timesteps = torch.cat(
             [timesteps,
              torch.ones((1, 1), device=device, dtype=torch.long) * (t + 1)], dim=1)
 
-        episode_return += reward
+        episode_reward += reward
         episode_length += 1
 
         if done:
             break
 
-    return episode_return, episode_length
+    return episode_reward, episode_length

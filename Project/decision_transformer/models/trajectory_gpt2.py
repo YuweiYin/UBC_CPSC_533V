@@ -590,7 +590,8 @@ class GPT2Model(GPT2PreTrainedModel):
 
     @add_start_docstrings_to_model_forward(GPT2_INPUTS_DOCSTRING)
     @add_code_sample_docstrings(
-        tokenizer_class=_TOKENIZER_FOR_DOC,
+        _TOKENIZER_FOR_DOC,
+        # tokenizer_class=_TOKENIZER_FOR_DOC,
         checkpoint="gpt2",
         output_type=BaseModelOutputWithPastAndCrossAttentions,
         config_class=_CONFIG_FOR_DOC,
@@ -721,7 +722,7 @@ class GPT2Model(GPT2PreTrainedModel):
 
                 def create_custom_forward(module):
                     def custom_forward(*inputs):
-                        # checkpointing only works with tuple returns, not with lists
+                        # checkpointing only works with tuple rewards, not with lists
                         return tuple(output for output in module(*inputs, use_cache, output_attentions))
 
                     return custom_forward

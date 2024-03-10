@@ -110,10 +110,19 @@ python3 get_offline_data.py --task "download"
 python3 get_offline_data.py --task "parse"
 ```
 
+The raw and parsed offline datasets are shared on 
+[Google Drive](https://drive.google.com/drive/folders/1iRs7pCTRuoQb6iS6KskCDynxkHDjAXGi?usp=sharing).
+
 ### Step 2: Run Gym-MuJoCo experiments
 
 ```bash
 python3 run_experiment.py
+```
+
+Specify the Gym env and offline dataset level:
+
+```bash
+python3 get_offline_data.py --env "hopper" --level "random"
 ```
 
 ---

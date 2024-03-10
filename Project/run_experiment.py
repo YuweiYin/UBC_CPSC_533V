@@ -13,11 +13,63 @@ import gymnasium as gym
 from transformers import set_seed
 import wandb
 
+from data.data_infos import DATASET_URLS
 from decision_transformer.evaluation.evaluate_episodes import evaluate_episode, evaluate_episode_rtg
 from decision_transformer.models.decision_transformer import DecisionTransformer
 from decision_transformer.models.mlp_bc import MLPBCModel
 from decision_transformer.training.act_trainer import ActTrainer
 from decision_transformer.training.seq_trainer import SequenceTrainer
+
+
+def get_dataset_dict(
+        target_env: str = ""
+) -> dict:
+    save_parsed_dir = os.path.join(args.save_dir, "parsed")
+    assert os.path.isdir(save_parsed_dir)
+
+    ds_filenames = os.listdir(save_parsed_dir)
+    ds_filenames = [ds_fn for ds_fn in ds_filenames if ds_fn.endswith(".hdf5.pkl")]
+    ds_fn_set = set(ds_filenames)
+
+    datasets = []
+    ds_dict = dict()
+    assert isinstance(DATASET_URLS, dict)
+    for env_name in args.env_list:
+        if len(target_env) > 0 and env_name != target_env:
+            continue
+
+        ds_dict[env_name] = dict()
+
+        # Set the env_name for Gymnasium
+        # Although the offline dataset is from v2 env, we use v4 env for gym.make to avoid using mujoco-py (buggy)
+        # https://github.com/Farama-Foundation/Gymnasium/blob/main/gymnasium/envs/mujoco/mujoco_py_env.py#L15
+        if env_name == "halfcheetah":
+            ds_dict[env_name]["gymnasium_env"] = f"HalfCheetah-v4"  # f"HalfCheetah-{args.version}"
+        elif env_name == "walker2d":
+            ds_dict[env_name]["gymnasium_env"] = f"Walker2d-v4"  # f"Walker2d-{args.version}"
+        elif env_name == "hopper":
+            ds_dict[env_name]["gymnasium_env"] = f"Hopper-v4"  # f"Hopper-{args.version}"
+        elif env_name == "ant":
+            ds_dict[env_name]["gymnasium_env"] = f"Ant-v4"  # f"Ant-{args.version}"
+        else:
+            raise ValueError(f"ValueError: env_name = {env_name}")
+
+        ds_dict[env_name]["levels"] = []
+        for level in args.levels:
+            ds_name = f"{env_name}-{level}-{args.version}.hdf5.pkl"
+            if ds_name in ds_fn_set:  # exist
+                datasets.append(ds_name)
+                ds_dict[env_name][level] = ds_name  # level values (filenames)
+                ds_dict[env_name]["levels"].append(level)  # level keys
+            else:
+                logger.info(f">>> Key Error: dataset `{ds_name}` not found")
+
+    if len(target_env) > 0:
+        logger.info(f">>> There are {len(datasets)} parsed offline datasets for env {target_env}.")
+    else:
+        logger.info(f">>> There are {len(datasets)} parsed offline datasets")
+
+    return ds_dict
 
 
 def discount_cumsum(x, gamma):
@@ -29,39 +81,47 @@ def discount_cumsum(x, gamma):
 
 
 def experiment(
-        exp_prefix,
-        variant,
+        exp_prefix: str = "gym-experiment",
 ):
-    device = variant.get("device", "cuda")
-    log_to_wandb = variant.get("log_to_wandb", False)
+    device = args.device
+    log_to_wandb = bool(args.log_to_wandb)
 
-    env_name, dataset = variant["env"], variant["dataset"]
-    model_type = variant["model_type"]
-    group_name = f"{exp_prefix}-{env_name}-{dataset}"
+    env_name, level = str(args.env), str(args.level)
+    model_type = str(args.model_type)
+    group_name = f"{exp_prefix}-{env_name}-{level}"
     exp_prefix = f"{group_name}-{random.randint(int(1e5), int(1e6) - 1)}"
 
-    if env_name == "hopper":
-        env = gym.make("Hopper-v3")
+    ds_dict = get_dataset_dict(env_name)
+    assert env_name in ds_dict, ValueError(f"ValueError: env_name = {env_name}")
+    gymnasium_env = ds_dict[env_name]["gymnasium_env"]
+
+    if env_name == "halfcheetah":
+        env = gym.make(gymnasium_env)
         max_ep_len = 1000
-        env_targets = [3600, 1800]  # evaluation conditioning targets
+        env_targets = [12000, 6000]  # evaluation conditioning targets
         scale = 1000.  # normalization for rewards/returns
-    elif env_name == "halfcheetah":
-        env = gym.make("HalfCheetah-v3")
+    elif env_name == "hopper":
+        env = gym.make(gymnasium_env)
         max_ep_len = 1000
-        env_targets = [12000, 6000]
+        env_targets = [3600, 1800]
         scale = 1000.
     elif env_name == "walker2d":
-        env = gym.make("Walker2d-v3")
+        env = gym.make(gymnasium_env)
         max_ep_len = 1000
         env_targets = [5000, 2500]
         scale = 1000.
-    elif env_name == "reacher2d":
-        from decision_transformer.envs.reacher_2d import Reacher2dEnv
-
-        env = Reacher2dEnv()
-        max_ep_len = 100
-        env_targets = [76, 40]
-        scale = 10.
+    elif env_name == "ant":
+        env = gym.make(gymnasium_env)
+        max_ep_len = 1000
+        env_targets = [4200, 2100]
+        scale = 1000.
+    # elif env_name == "reacher2d":
+    #     from decision_transformer.envs.reacher_2d import Reacher2dEnv
+    #
+    #     env = Reacher2dEnv()
+    #     max_ep_len = 100
+    #     env_targets = [76, 40]
+    #     scale = 10.
     else:
         raise NotImplementedError
 
@@ -69,24 +129,25 @@ def experiment(
         env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
 
     state_dim = env.observation_space.shape[0]
-    act_dim = env.action_space.shape[0]
+    action_dim = env.action_space.shape[0]
 
-    # load dataset
-    dataset_path = f"data/{env_name}-{dataset}-v2.pkl"
-    with open(dataset_path, "rb") as f:
-        trajectories = pickle.load(f)
+    # Load the offline dataset (trajectories)
+    dataset_fp = os.path.join(args.save_dir, "parsed", f"{env_name}-{level}-v2.hdf5.pkl")
+    assert os.path.isfile(dataset_fp), f"Path error: can not find {dataset_fp}"
+    with open(dataset_fp, "rb") as fp_in:
+        trajectories = pickle.load(fp_in)
 
-    # save all path information into separate lists
-    mode = variant.get("mode", "normal")
-    states, traj_lens, returns = [], [], []
-    for path in trajectories:
+    # Save all trajectory information into separate lists
+    mode = args.mode
+    states, traj_lens, rewards = [], [], []
+    for traj in trajectories:
         if mode == "delayed":  # delayed: all rewards moved to end of trajectory
-            path["rewards"][-1] = path["rewards"].sum()
-            path["rewards"][:-1] = 0.
-        states.append(path["observations"])
-        traj_lens.append(len(path["observations"]))
-        returns.append(path["rewards"].sum())
-    traj_lens, returns = np.array(traj_lens), np.array(returns)
+            traj["rewards"][-1] = traj["rewards"].sum()
+            traj["rewards"][:-1] = 0.
+        states.append(traj["observations"])
+        traj_lens.append(len(traj["observations"]))
+        rewards.append(traj["rewards"].sum())
+    traj_lens, rewards = np.array(traj_lens), np.array(rewards)
 
     # used for input normalization
     states = np.concatenate(states, axis=0)
@@ -95,20 +156,20 @@ def experiment(
     num_timesteps = sum(traj_lens)
 
     print("=" * 50)
-    print(f"Starting new experiment: {env_name} {dataset}")
+    print(f"Starting new experiment: {env_name} {level}")
     print(f"{len(traj_lens)} trajectories, {num_timesteps} timesteps found")
-    print(f"Average return: {np.mean(returns):.2f}, std: {np.std(returns):.2f}")
-    print(f"Max return: {np.max(returns):.2f}, min: {np.min(returns):.2f}")
+    print(f"Average rewards: {np.mean(rewards):.2f}, std: {np.std(rewards):.2f}")
+    print(f"Max rewards: {np.max(rewards):.2f}, min: {np.min(rewards):.2f}")
     print("=" * 50)
 
-    K = variant["K"]
-    batch_size = variant["batch_size"]
-    num_eval_episodes = variant["num_eval_episodes"]
-    pct_traj = variant.get("pct_traj", 1.)
+    K = args.K
+    batch_size = args.batch_size
+    num_eval_episodes = args.num_eval_episodes
+    pct_traj = args.pct_traj
 
     # only train on top pct_traj trajectories (for %BC experiment)
     num_timesteps = max(int(pct_traj*num_timesteps), 1)
-    sorted_inds = np.argsort(returns)  # lowest to highest
+    sorted_inds = np.argsort(rewards)  # lowest to highest
     num_trajectories = 1
     timesteps = traj_lens[sorted_inds[-1]]
     ind = len(trajectories) - 2
@@ -121,68 +182,68 @@ def experiment(
     # used to re-weight sampling, so we sample according to timesteps instead of trajectories
     p_sample = traj_lens[sorted_inds] / sum(traj_lens[sorted_inds])
 
-    def get_batch(batch_size=256, max_len=K):
+    def get_batch(bsz=256, max_len=K):
         batch_inds = np.random.choice(
             np.arange(num_trajectories),
-            size=batch_size,
+            size=bsz,
             replace=True,
             p=p_sample,  # re-weights so we sample according to timesteps
         )
 
-        s, a, r, d, rtg, timesteps, mask = [], [], [], [], [], [], []
-        for i in range(batch_size):
-            traj = trajectories[int(sorted_inds[batch_inds[i]])]
-            si = random.randint(0, traj["rewards"].shape[0] - 1)
+        s, a, r, d, rtg, _timesteps, _mask = [], [], [], [], [], [], []
+        for i in range(bsz):
+            _traj = trajectories[int(sorted_inds[batch_inds[i]])]
+            si = random.randint(0, _traj["rewards"].shape[0] - 1)
 
             # get sequences from dataset
-            s.append(traj["observations"][si:si + max_len].reshape(1, -1, state_dim))
-            a.append(traj["actions"][si:si + max_len].reshape(1, -1, act_dim))
-            r.append(traj["rewards"][si:si + max_len].reshape(1, -1, 1))
-            if "terminals" in traj:
-                d.append(traj["terminals"][si:si + max_len].reshape(1, -1))
+            s.append(_traj["observations"][si:si + max_len].reshape(1, -1, state_dim))
+            a.append(_traj["actions"][si:si + max_len].reshape(1, -1, action_dim))
+            r.append(_traj["rewards"][si:si + max_len].reshape(1, -1, 1))
+            if "terminals" in _traj:
+                d.append(_traj["terminals"][si:si + max_len].reshape(1, -1))
             else:
-                d.append(traj["dones"][si:si + max_len].reshape(1, -1))
-            timesteps.append(np.arange(si, si + s[-1].shape[1]).reshape(1, -1))
-            timesteps[-1][timesteps[-1] >= max_ep_len] = max_ep_len-1  # padding cutoff
-            rtg.append(discount_cumsum(traj["rewards"][si:], gamma=1.)[:s[-1].shape[1] + 1].reshape(1, -1, 1))
+                d.append(_traj["dones"][si:si + max_len].reshape(1, -1))
+            _timesteps.append(np.arange(si, si + s[-1].shape[1]).reshape(1, -1))
+            _timesteps[-1][_timesteps[-1] >= max_ep_len] = max_ep_len-1  # padding cutoff
+            rtg.append(discount_cumsum(_traj["rewards"][si:], gamma=1.)[:s[-1].shape[1] + 1].reshape(1, -1, 1))
             if rtg[-1].shape[1] <= s[-1].shape[1]:
                 rtg[-1] = np.concatenate([rtg[-1], np.zeros((1, 1, 1))], axis=1)
 
             # padding and state + reward normalization
-            tlen = s[-1].shape[1]
-            s[-1] = np.concatenate([np.zeros((1, max_len - tlen, state_dim)), s[-1]], axis=1)
+            traj_len = s[-1].shape[1]  # the length of the trajectory
+            s[-1] = np.concatenate([np.zeros((1, max_len - traj_len, state_dim)), s[-1]], axis=1)
             s[-1] = (s[-1] - state_mean) / state_std
-            a[-1] = np.concatenate([np.ones((1, max_len - tlen, act_dim)) * -10., a[-1]], axis=1)
-            r[-1] = np.concatenate([np.zeros((1, max_len - tlen, 1)), r[-1]], axis=1)
-            d[-1] = np.concatenate([np.ones((1, max_len - tlen)) * 2, d[-1]], axis=1)
-            rtg[-1] = np.concatenate([np.zeros((1, max_len - tlen, 1)), rtg[-1]], axis=1) / scale
-            timesteps[-1] = np.concatenate([np.zeros((1, max_len - tlen)), timesteps[-1]], axis=1)
-            mask.append(np.concatenate([np.zeros((1, max_len - tlen)), np.ones((1, tlen))], axis=1))
+            a[-1] = np.concatenate([np.ones((1, max_len - traj_len, action_dim)) * -10., a[-1]], axis=1)
+            r[-1] = np.concatenate([np.zeros((1, max_len - traj_len, 1)), r[-1]], axis=1)
+            d[-1] = np.concatenate([np.ones((1, max_len - traj_len)) * 2, d[-1]], axis=1)
+            rtg[-1] = np.concatenate([np.zeros((1, max_len - traj_len, 1)), rtg[-1]], axis=1) / scale
+            _timesteps[-1] = np.concatenate([np.zeros((1, max_len - traj_len)), _timesteps[-1]], axis=1)
+            _mask.append(np.concatenate([np.zeros((1, max_len - traj_len)), np.ones((1, traj_len))], axis=1))
 
         s = torch.from_numpy(np.concatenate(s, axis=0)).to(dtype=torch.float32, device=device)
         a = torch.from_numpy(np.concatenate(a, axis=0)).to(dtype=torch.float32, device=device)
         r = torch.from_numpy(np.concatenate(r, axis=0)).to(dtype=torch.float32, device=device)
         d = torch.from_numpy(np.concatenate(d, axis=0)).to(dtype=torch.long, device=device)
         rtg = torch.from_numpy(np.concatenate(rtg, axis=0)).to(dtype=torch.float32, device=device)
-        timesteps = torch.from_numpy(np.concatenate(timesteps, axis=0)).to(dtype=torch.long, device=device)
-        mask = torch.from_numpy(np.concatenate(mask, axis=0)).to(device=device)
+        _timesteps = torch.from_numpy(np.concatenate(_timesteps, axis=0)).to(dtype=torch.long, device=device)
+        _mask = torch.from_numpy(np.concatenate(_mask, axis=0)).to(device=device)
 
-        return s, a, r, d, rtg, timesteps, mask
+        return s, a, r, d, rtg, _timesteps, _mask
 
     def eval_episodes(target_rew):
-        def fn(model):
-            returns, lengths = [], []
+        def func(_model):
+            _rewards, _lengths = [], []
             for _ in range(num_eval_episodes):
                 with torch.no_grad():
                     if model_type == "dt":
                         ret, length = evaluate_episode_rtg(
                             env,
                             state_dim,
-                            act_dim,
-                            model,
+                            action_dim,
+                            _model,
                             max_ep_len=max_ep_len,
                             scale=scale,
-                            target_return=target_rew/scale,
+                            target_reward=target_rew / scale,
                             mode=mode,
                             state_mean=state_mean,
                             state_std=state_std,
@@ -192,58 +253,58 @@ def experiment(
                         ret, length = evaluate_episode(
                             env,
                             state_dim,
-                            act_dim,
-                            model,
+                            action_dim,
+                            _model,
                             max_ep_len=max_ep_len,
-                            target_return=target_rew/scale,
+                            target_reward=target_rew / scale,
                             mode=mode,
                             state_mean=state_mean,
                             state_std=state_std,
                             device=device,
                         )
-                returns.append(ret)
-                lengths.append(length)
+                _rewards.append(ret)
+                _lengths.append(length)
             return {
-                f"target_{target_rew}_return_mean": np.mean(returns),
-                f"target_{target_rew}_return_std": np.std(returns),
-                f"target_{target_rew}_length_mean": np.mean(lengths),
-                f"target_{target_rew}_length_std": np.std(lengths),
+                f"target_{target_rew}_reward_mean": np.mean(_rewards),
+                f"target_{target_rew}_reward_std": np.std(_rewards),
+                f"target_{target_rew}_length_mean": np.mean(_lengths),
+                f"target_{target_rew}_length_std": np.std(_lengths),
             }
-        return fn
+        return func
 
     if model_type == "dt":
         model = DecisionTransformer(
             state_dim=state_dim,
-            act_dim=act_dim,
+            action_dim=action_dim,
             max_length=K,
             max_ep_len=max_ep_len,
-            hidden_size=variant["embed_dim"],
-            n_layer=variant["n_layer"],
-            n_head=variant["n_head"],
-            n_inner=4*variant["embed_dim"],
-            activation_function=variant["activation_function"],
+            hidden_size=args.embed_dim,
+            n_layer=args.n_layer,
+            n_head=args.n_head,
+            n_inner=4 * args.embed_dim,
+            activation_function=args.activation_function,
             n_positions=1024,
-            resid_pdrop=variant["dropout"],
-            attn_pdrop=variant["dropout"],
+            resid_pdrop=args.dropout,
+            attn_pdrop=args.dropout,
         )
     elif model_type == "bc":
         model = MLPBCModel(
             state_dim=state_dim,
-            act_dim=act_dim,
+            action_dim=action_dim,
             max_length=K,
-            hidden_size=variant["embed_dim"],
-            n_layer=variant["n_layer"],
+            hidden_size=args.embed_dim,
+            n_layer=args.n_layer,
         )
     else:
         raise NotImplementedError
 
     model = model.to(device=device)
 
-    warmup_steps = variant["warmup_steps"]
+    warmup_steps = args.warmup_steps
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=variant["learning_rate"],
-        weight_decay=variant["weight_decay"],
+        lr=args.learning_rate,
+        weight_decay=args.weight_decay,
     )
     scheduler = torch.optim.lr_scheduler.LambdaLR(
         optimizer,
@@ -270,18 +331,24 @@ def experiment(
             loss_fn=lambda s_hat, a_hat, r_hat, s, a, r: torch.mean((a_hat - a)**2),
             eval_fns=[eval_episodes(tar) for tar in env_targets],
         )
+    else:
+        raise ValueError(f"ValueError: model_type = {model_type}")
 
     if log_to_wandb:
         wandb.init(
             name=exp_prefix,
             group=group_name,
             project="decision-transformer",
-            config=variant
+            config=vars(args)
         )
         # wandb.watch(model)  # wandb has some bug
 
-    for iter in range(variant["max_iters"]):
-        outputs = trainer.train_iteration(num_steps=variant["num_steps_per_iter"], iter_num=iter+1, print_logs=True)
+    for _iter in range(args.max_iters):
+        outputs = trainer.train_iteration(
+            num_steps=args.num_steps_per_iter,
+            iter_num=_iter + 1,
+            print_logs=True
+        )
         if log_to_wandb:
             wandb.log(outputs)
 
@@ -296,13 +363,24 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-v", "--verbose", action="store_true", default=False, help="Verbose mode: show logs")
     parser.add_argument("--seed", type=int, default=42, help="Random seed of all modules")
-    parser.add_argument("--env", type=str, default="hopper")
-    parser.add_argument("--dataset", type=str, default="medium")  # medium, medium-replay, medium-expert, expert
+    parser.add_argument("--save_dir", type=str, default="data", help="The directory to save data")
+    parser.add_argument("--env", type=str, default="hopper",
+                        help="Gym env name: \"halfcheetah\", \"walker2d\", \"hopper\", \"ant\"")
+    parser.add_argument("--level", type=str, default="random",
+                        help="Dataset level: \"random\", \"medium\", \"expert\", \"medium-replay\", \"medium-expert\"")
+    parser.add_argument("--version", type=str, default="v2",
+                        help="Offline data version: \"v2\", \"v1\", \"v0\"")
+    # parser.add_argument("--device", type=str, default="cuda")
+    parser.add_argument("--cuda", type=str, default="0", help="CUDA device(s), e.g., 0 OR 0,1")
+    # parser.add_argument("--log_to_wandb", "-w", type=bool, default=False)
+    parser.add_argument("-w", "--log_to_wandb", action="store_true", default=False)
+
+    # Decision Transformer
     parser.add_argument("--mode", type=str, default="normal")  # normal for standard setting, delayed for sparse
+    parser.add_argument("--model_type", type=str, default="dt")  # dt for decision transformer, bc for behavior cloning
     parser.add_argument("--K", type=int, default=20)
     parser.add_argument("--pct_traj", type=float, default=1.)
     parser.add_argument("--batch_size", type=int, default=64)
-    parser.add_argument("--model_type", type=str, default="dt")  # dt for decision transformer, bc for behavior cloning
     parser.add_argument("--embed_dim", type=int, default=128)
     parser.add_argument("--n_layer", type=int, default=3)
     parser.add_argument("--n_head", type=int, default=1)
@@ -314,8 +392,6 @@ if __name__ == "__main__":
     parser.add_argument("--num_eval_episodes", type=int, default=100)
     parser.add_argument("--max_iters", type=int, default=10)
     parser.add_argument("--num_steps_per_iter", type=int, default=10000)
-    parser.add_argument("--device", type=str, default="cuda")
-    parser.add_argument("--log_to_wandb", "-w", type=bool, default=False)
 
     args = parser.parse_args()
     logger.info(args)
@@ -329,7 +405,32 @@ if __name__ == "__main__":
     np.random.seed(args.seed)
     set_seed(args.seed)
 
-    experiment("gym-experiment", variant=vars(args))
+    args.env_list = ["halfcheetah", "hopper", "walker2d", "ant"]
+    args.levels = ["random", "medium", "expert", "medium-replay", "medium-expert"]
+
+    # CUDA
+    os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda
+    args.has_cuda = torch.cuda.is_available()
+    args.device = torch.device("cuda" if args.has_cuda else "cpu")
+    args.gpus = args.cuda.split(",") if "," in args.cuda else [args.cuda]
+    args.gpus = [int(gpu_id) for gpu_id in args.gpus]
+    args.device_count = int(torch.cuda.device_count())
+    args.ddp_able = args.has_cuda and len(args.gpus) > 1 and args.device_count > 1
+    if args.verbose:
+        logger.info(
+            f"HAS_CUDA: {args.has_cuda}; DEVICE: {args.device}; GPUS: {args.gpus}; DDP able: {args.ddp_able}")
+        logger.info(f"torch.__version__: {torch.__version__}")
+        logger.info(f"torch.version.cuda: {torch.version.cuda}")
+        logger.info(f"torch.cuda.is_available(): {torch.cuda.is_available()}")
+        logger.info(f"torch.cuda.device_count(): {torch.cuda.device_count()}")
+        logger.info(f"torch.backends.cudnn.version(): {torch.backends.cudnn.version()}")
+        logger.info(f"torch.cuda.get_arch_list(): {torch.cuda.get_arch_list()}")
+        if args.has_cuda:
+            logger.info(f"torch.cuda.current_device(): {torch.cuda.current_device()}")
+            logger.info(f"torch.cuda.get_device_name(0): {torch.cuda.get_device_name(0)}")
+
+    # experiment(exp_prefix="gym-experiment", variant=vars(args))
+    experiment(exp_prefix="gym-experiment")
 
     timer_end = time.perf_counter()
     logger.info("Total Running Time: %.1f sec (%.1f min)" % (timer_end - timer_start, (timer_end - timer_start) / 60))
