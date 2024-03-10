@@ -57,6 +57,7 @@ def experiment(
         scale = 1000.
     elif env_name == "reacher2d":
         from decision_transformer.envs.reacher_2d import Reacher2dEnv
+
         env = Reacher2dEnv()
         max_ep_len = 100
         env_targets = [76, 40]
