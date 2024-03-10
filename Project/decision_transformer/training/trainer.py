@@ -17,7 +17,7 @@ class Trainer:
 
         self.trainer_start_time = time.perf_counter()
 
-    def train_iteration(self, num_steps, iter_num=0, print_logs=False):
+    def train_iteration(self, num_steps, iter_num=0, verbose=False):
         train_losses = []
         logs = dict()
 
@@ -52,7 +52,7 @@ class Trainer:
         for k in self.diagnostics:
             logs[k] = self.diagnostics[k]
 
-        if print_logs:
+        if verbose:
             print("=" * 80)
             print(f"Iteration {iter_num}")
             for k, v in logs.items():

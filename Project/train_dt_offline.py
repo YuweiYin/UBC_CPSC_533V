@@ -84,6 +84,7 @@ def run(
         exp_prefix: str = "gym-mujoco",
 ):
     device = args.device
+    seed = int(args.seed)
     log_to_wandb = bool(args.log_to_wandb)
 
     env_name, level, version = str(args.env), str(args.level), str(args.version)
@@ -94,24 +95,25 @@ def run(
     ds_dict = get_dataset_dict(env_name)
     assert env_name in ds_dict, ValueError(f"ValueError: env_name = {env_name}")
     gymnasium_env = ds_dict[env_name]["gymnasium_env"]
+    render_mode = None if args.render_mode == "" else str(args.render_mode)
 
     if env_name == "halfcheetah":
-        env = gym.make(gymnasium_env)
+        env = gym.make(gymnasium_env, render_mode=render_mode)
         max_ep_len = 1000
         env_targets = [12000.0, 6000.0]  # evaluation conditioning targets
         scale = 1000.0  # normalization for rewards/returns
     elif env_name == "hopper":
-        env = gym.make(gymnasium_env)
+        env = gym.make(gymnasium_env, render_mode=render_mode)
         max_ep_len = 1000
         env_targets = [3600.0, 1800.0]
         scale = 1000.0
     elif env_name == "walker2d":
-        env = gym.make(gymnasium_env)
+        env = gym.make(gymnasium_env, render_mode=render_mode)
         max_ep_len = 1000
         env_targets = [5000.0, 2500.0]
         scale = 1000.0
     elif env_name == "ant":
-        env = gym.make(gymnasium_env)
+        env = gym.make(gymnasium_env, render_mode=render_mode)
         max_ep_len = 1000
         env_targets = [4200.0, 2100.0]
         scale = 1000.0
@@ -205,7 +207,7 @@ def run(
             else:
                 d.append(_traj["dones"][si: si + max_len].reshape(1, -1))
             _timesteps.append(np.arange(si, si + s[-1].shape[1]).reshape(1, -1))
-            _timesteps[-1][_timesteps[-1] >= max_ep_len] = max_ep_len-1  # padding cutoff
+            _timesteps[-1][_timesteps[-1] >= max_ep_len] = max_ep_len - 1  # padding cutoff
             rtg.append(discount_cumsum(_traj["rewards"][si:], gamma=1.)[:s[-1].shape[1] + 1].reshape(1, -1, 1))
             if rtg[-1].shape[1] <= s[-1].shape[1]:
                 rtg[-1] = np.concatenate([rtg[-1], np.zeros((1, 1, 1))], axis=1)
@@ -235,7 +237,7 @@ def run(
 
         def eval_func(_model):
             _rewards, _lengths = [], []
-            for _ in range(num_eval_episodes):
+            for episode_idx in range(num_eval_episodes):
                 with torch.no_grad():
                     if model_type == "dt":
                         ret, length = evaluate_episode_dt(
@@ -247,8 +249,10 @@ def run(
                             scale=scale,
                             target_reward=target_reward / scale,
                             mode=mode,
+                            render_mode=render_mode,
                             state_mean=state_mean,
                             state_std=state_std,
+                            seed=seed + episode_idx,
                             device=device,
                         )
                     else:
@@ -261,8 +265,10 @@ def run(
                             # scale=1.0,
                             target_reward=target_reward / scale,
                             # mode=mode,
+                            render_mode=render_mode,
                             state_mean=state_mean,
                             state_std=state_std,
+                            seed=seed + episode_idx,
                             device=device,
                         )
                 _rewards.append(ret)
@@ -348,13 +354,13 @@ def run(
         # wandb.watch(model)  # wandb has some bug
 
     for _iter in range(int(args.max_iters)):
-        outputs = trainer.train_iteration(
+        output_logs = trainer.train_iteration(
             num_steps=int(args.num_steps_per_iter),
             iter_num=_iter + 1,
-            print_logs=bool(args.verbose)
+            verbose=bool(args.verbose)
         )
         if log_to_wandb:
-            wandb.log(outputs)
+            wandb.log(output_logs)
 
 
 if __name__ == "__main__":
@@ -380,6 +386,8 @@ if __name__ == "__main__":
     parser.add_argument("--log_to_wandb", action="store_true", default=False)
 
     # Decision Transformer
+    parser.add_argument("--render_mode", type=str, default="",
+                        help="Gym render_mode: \"\" for None or \"human\" for Human visualization")  # Gym render_mode
     parser.add_argument("--mode", type=str, default="normal")  # normal for standard setting, delayed for sparse
     parser.add_argument("--model_type", type=str, default="dt")  # dt for decision transformer, bc for behavior cloning
     parser.add_argument("--K", type=int, default=20)
