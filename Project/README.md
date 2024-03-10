@@ -125,4 +125,10 @@ Specify the Gym env and offline dataset level:
 python3 get_offline_data.py --env "hopper" --level "random"
 ```
 
+To show the training/evaluation logs and save logs to [wandb](https://wandb.ai/):
+
+```bash
+python3 get_offline_data.py --env "hopper" --level "random" --verbose --log_to_wandb
+```
+
 ---

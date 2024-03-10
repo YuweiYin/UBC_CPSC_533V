@@ -1,4 +1,5 @@
 import time
+import logging
 import numpy as np
 import torch
 
@@ -6,6 +7,12 @@ import torch
 class Trainer:
 
     def __init__(self, model, optimizer, batch_size, get_batch, loss_fn, scheduler=None, eval_fns=None):
+        logging.basicConfig(
+            format="[%(asctime)s - %(levelname)s - %(name)s] -   %(message)s",
+            datefmt="%m/%d/%Y %H:%M:%S", level=logging.INFO
+        )
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         self.model = model
         self.optimizer = optimizer
         self.batch_size = batch_size
@@ -53,10 +60,11 @@ class Trainer:
             logs[k] = self.diagnostics[k]
 
         if verbose:
-            print("=" * 80)
-            print(f"Iteration {iter_num}")
+            self.logger.info("=" * 80)
+            self.logger.info(f"Iteration {iter_num}")
             for k, v in logs.items():
-                print(f"{k}: {v}")
+                self.logger.info(f"{k}: {v}")
+            self.logger.info("=" * 80 + "\n\n")
 
         return logs
 
