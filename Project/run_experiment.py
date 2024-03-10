@@ -429,8 +429,7 @@ if __name__ == "__main__":
             logger.info(f"torch.cuda.current_device(): {torch.cuda.current_device()}")
             logger.info(f"torch.cuda.get_device_name(0): {torch.cuda.get_device_name(0)}")
 
-    # experiment(exp_prefix="gym-experiment", variant=vars(args))
-    experiment(exp_prefix="gym-experiment")
+    experiment(exp_prefix=f"exp-gym-mujoco-{args.env}-{args.level}-{args.version}")
 
     timer_end = time.perf_counter()
     logger.info("Total Running Time: %.1f sec (%.1f min)" % (timer_end - timer_start, (timer_end - timer_start) / 60))
