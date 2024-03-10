@@ -84,7 +84,7 @@ class DecisionTransformer(TrajectoryModel):
         batch_size, seq_length = states.shape[0], states.shape[1]
 
         if attention_mask is None:
-            # attention mask for GPT: 1 if can be attended to, 0 if not
+            # attention mask for GPT: 1 if it can be attended to, 0 if not
             attention_mask = torch.ones((batch_size, seq_length), dtype=torch.long)
 
         # embed each modality with a different head

@@ -1,6 +1,4 @@
 import torch
-# import numpy as np
-
 from .trainer import Trainer
 
 

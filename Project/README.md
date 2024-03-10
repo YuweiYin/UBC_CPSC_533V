@@ -125,4 +125,16 @@ Specify the Gym env and offline dataset level:
 python3 get_offline_data.py --env "hopper" --level "random"
 ```
 
----
+## Experiments
+
+```bash
+mkdir -p log
+mkdir -p output
+mkdir -p output_text
+mkdir -p output_figure
+```
+
+- The running logs (`.log` file) will be in the folder `log/`
+- The QA evaluation results (`.jsonl` file) and statistics will be in the folder `output/`
+- The meta info (`.json` file) of each valid path will be in the folder `output_text/`
+- The visualization figure (`.pdf` file) of each valid path will be in the folder `output_figure/`

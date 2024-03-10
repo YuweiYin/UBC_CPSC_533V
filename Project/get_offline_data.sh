@@ -2,7 +2,7 @@
 
 echo -e ">>> Get ALL Offline RL Data (downloading and parsing trajectories)\n\n"
 
-LOG_DIR="log"
+LOG_DIR="log/get_offline_data"
 mkdir -p "${LOG_DIR}"
 
 conda activate 533v

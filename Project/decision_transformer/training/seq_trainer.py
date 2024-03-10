@@ -1,6 +1,4 @@
 import torch
-# import numpy as np
-
 from .trainer import Trainer
 
 
@@ -14,9 +12,9 @@ class SequenceTrainer(Trainer):
             states, actions, rewards, rtg[:, :-1], timesteps, attention_mask=attention_mask,
         )
 
-        act_dim = action_preds.shape[2]
-        action_preds = action_preds.reshape(-1, act_dim)[attention_mask.reshape(-1) > 0]
-        action_target = action_target.reshape(-1, act_dim)[attention_mask.reshape(-1) > 0]
+        action_dim = action_preds.shape[2]
+        action_preds = action_preds.reshape(-1, action_dim)[attention_mask.reshape(-1) > 0]
+        action_target = action_target.reshape(-1, action_dim)[attention_mask.reshape(-1) > 0]
 
         loss = self.loss_fn(
             None, action_preds, None,

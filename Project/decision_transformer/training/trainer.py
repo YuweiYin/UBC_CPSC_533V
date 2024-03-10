@@ -15,33 +15,38 @@ class Trainer:
         self.eval_fns = [] if eval_fns is None else eval_fns
         self.diagnostics = dict()
 
-        self.start_time = time.time()
+        self.trainer_start_time = time.perf_counter()
 
     def train_iteration(self, num_steps, iter_num=0, print_logs=False):
         train_losses = []
         logs = dict()
 
-        train_start = time.time()
+        train_start_time = time.perf_counter()
 
+        # Training
         self.model.train()
-        for _ in range(num_steps):
+        # for _ in range(num_steps):
+        for _ in range(100):  # TODO debugging
             train_loss = self.train_step()
             train_losses.append(train_loss)
             if self.scheduler is not None:
                 self.scheduler.step()
 
-        logs["time/training"] = time.time() - train_start
+        train_end_time = time.perf_counter()
+        logs["time/training"] = train_end_time - train_start_time
 
-        eval_start = time.time()
+        eval_start_time = time.perf_counter()
 
+        # Evaluation
         self.model.eval()
         for eval_fn in self.eval_fns:
             outputs = eval_fn(self.model)
             for k, v in outputs.items():
                 logs[f"evaluation/{k}"] = v
 
-        logs["time/total"] = time.time() - self.start_time
-        logs["time/evaluation"] = time.time() - eval_start
+        eval_end_time = time.perf_counter()
+        logs["time/evaluation"] = eval_end_time - eval_start_time
+        logs["time/total"] = eval_end_time - self.trainer_start_time
         logs["training/train_loss_mean"] = np.mean(train_losses)
         logs["training/train_loss_std"] = np.std(train_losses)
 

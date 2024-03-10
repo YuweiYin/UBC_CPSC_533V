@@ -14,7 +14,7 @@ from transformers import set_seed
 import wandb
 
 from data.data_infos import DATASET_URLS
-from decision_transformer.evaluation.evaluate_episodes import evaluate_episode, evaluate_episode_rtg
+from decision_transformer.evaluation.evaluate_episodes import evaluate_episode, evaluate_episode_dt
 from decision_transformer.models.decision_transformer import DecisionTransformer
 from decision_transformer.models.mlp_bc import MLPBCModel
 from decision_transformer.training.act_trainer import ActTrainer
@@ -80,15 +80,15 @@ def discount_cumsum(x, gamma):
     return discount_cum_sum
 
 
-def experiment(
-        exp_prefix: str = "gym-experiment",
+def run(
+        exp_prefix: str = "gym-mujoco",
 ):
     device = args.device
     log_to_wandb = bool(args.log_to_wandb)
 
-    env_name, level = str(args.env), str(args.level)
+    env_name, level, version = str(args.env), str(args.level), str(args.version)
     model_type = str(args.model_type)
-    group_name = f"{exp_prefix}-{env_name}-{level}"
+    group_name = f"{exp_prefix}-{env_name}-{level}-{version}"
     exp_prefix = f"{group_name}-{random.randint(int(1e5), int(1e6) - 1)}"
 
     ds_dict = get_dataset_dict(env_name)
@@ -98,33 +98,34 @@ def experiment(
     if env_name == "halfcheetah":
         env = gym.make(gymnasium_env)
         max_ep_len = 1000
-        env_targets = [12000, 6000]  # evaluation conditioning targets
-        scale = 1000.  # normalization for rewards/returns
+        env_targets = [12000.0, 6000.0]  # evaluation conditioning targets
+        scale = 1000.0  # normalization for rewards/returns
     elif env_name == "hopper":
         env = gym.make(gymnasium_env)
         max_ep_len = 1000
-        env_targets = [3600, 1800]
-        scale = 1000.
+        env_targets = [3600.0, 1800.0]
+        scale = 1000.0
     elif env_name == "walker2d":
         env = gym.make(gymnasium_env)
         max_ep_len = 1000
-        env_targets = [5000, 2500]
-        scale = 1000.
+        env_targets = [5000.0, 2500.0]
+        scale = 1000.0
     elif env_name == "ant":
         env = gym.make(gymnasium_env)
         max_ep_len = 1000
-        env_targets = [4200, 2100]
-        scale = 1000.
+        env_targets = [4200.0, 2100.0]
+        scale = 1000.0
     # elif env_name == "reacher2d":
     #     from decision_transformer.envs.reacher_2d import Reacher2dEnv
     #
     #     env = Reacher2dEnv()
     #     max_ep_len = 100
-    #     env_targets = [76, 40]
-    #     scale = 10.
+    #     env_targets = [76.0, 40.0]
+    #     scale = 10.0
     else:
         raise NotImplementedError
 
+    assert scale > 0.0 and int(scale) > 0, ValueError(f"ValueError: scale = {scale}")
     if model_type == "bc":
         env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
 
@@ -138,7 +139,7 @@ def experiment(
         trajectories = pickle.load(fp_in)
 
     # Save all trajectory information into separate lists
-    mode = args.mode
+    mode = str(args.mode)
     states, traj_lens, rewards = [], [], []
     for traj in trajectories:
         if mode == "delayed":  # delayed: all rewards moved to end of trajectory
@@ -162,10 +163,10 @@ def experiment(
     print(f"Max rewards: {np.max(rewards):.2f}, min: {np.min(rewards):.2f}")
     print("=" * 50)
 
-    K = args.K
-    batch_size = args.batch_size
-    num_eval_episodes = args.num_eval_episodes
-    pct_traj = args.pct_traj
+    K = max(int(args.K), 1)
+    batch_size = int(args.batch_size)
+    num_eval_episodes = int(args.num_eval_episodes)
+    pct_traj = float(args.pct_traj)
 
     # only train on top pct_traj trajectories (for %BC experiment)
     num_timesteps = max(int(pct_traj*num_timesteps), 1)
@@ -230,20 +231,21 @@ def experiment(
 
         return s, a, r, d, rtg, _timesteps, _mask
 
-    def eval_episodes(target_rew):
-        def func(_model):
+    def eval_episodes(target_reward: float):
+
+        def eval_func(_model):
             _rewards, _lengths = [], []
             for _ in range(num_eval_episodes):
                 with torch.no_grad():
                     if model_type == "dt":
-                        ret, length = evaluate_episode_rtg(
-                            env,
-                            state_dim,
-                            action_dim,
-                            _model,
+                        ret, length = evaluate_episode_dt(
+                            env=env,
+                            state_dim=state_dim,
+                            action_dim=action_dim,
+                            model=_model,
                             max_ep_len=max_ep_len,
                             scale=scale,
-                            target_reward=target_rew / scale,
+                            target_reward=target_reward / scale,
                             mode=mode,
                             state_mean=state_mean,
                             state_std=state_std,
@@ -251,13 +253,14 @@ def experiment(
                         )
                     else:
                         ret, length = evaluate_episode(
-                            env,
-                            state_dim,
-                            action_dim,
-                            _model,
+                            env=env,
+                            state_dim=state_dim,
+                            action_dim=action_dim,
+                            model=_model,
                             max_ep_len=max_ep_len,
-                            target_reward=target_rew / scale,
-                            mode=mode,
+                            # scale=1.0,
+                            target_reward=target_reward / scale,
+                            # mode=mode,
                             state_mean=state_mean,
                             state_std=state_std,
                             device=device,
@@ -265,12 +268,13 @@ def experiment(
                 _rewards.append(ret)
                 _lengths.append(length)
             return {
-                f"target_{target_rew}_reward_mean": np.mean(_rewards),
-                f"target_{target_rew}_reward_std": np.std(_rewards),
-                f"target_{target_rew}_length_mean": np.mean(_lengths),
-                f"target_{target_rew}_length_std": np.std(_lengths),
+                f"target_{target_reward}_reward_mean": np.mean(_rewards),
+                f"target_{target_reward}_reward_std": np.std(_rewards),
+                f"target_{target_reward}_length_mean": np.mean(_lengths),
+                f"target_{target_reward}_length_std": np.std(_lengths),
             }
-        return func
+
+        return eval_func
 
     if model_type == "dt":
         model = DecisionTransformer(
@@ -278,33 +282,33 @@ def experiment(
             action_dim=action_dim,
             max_length=K,
             max_ep_len=max_ep_len,
-            hidden_size=args.embed_dim,
-            n_layer=args.n_layer,
-            n_head=args.n_head,
-            n_inner=4 * args.embed_dim,
+            hidden_size=int(args.embed_dim),
+            n_layer=int(args.n_layer),
+            n_head=int(args.n_head),
+            n_inner=4 * int(args.embed_dim),
             activation_function=args.activation_function,
             n_positions=1024,
-            resid_pdrop=args.dropout,
-            attn_pdrop=args.dropout,
+            resid_pdrop=float(args.dropout),
+            attn_pdrop=float(args.dropout),
         )
     elif model_type == "bc":
         model = MLPBCModel(
             state_dim=state_dim,
             action_dim=action_dim,
             max_length=K,
-            hidden_size=args.embed_dim,
-            n_layer=args.n_layer,
+            hidden_size=int(args.embed_dim),
+            n_layer=int(args.n_layer),
         )
     else:
         raise NotImplementedError
 
     model = model.to(device=device)
 
-    warmup_steps = args.warmup_steps
+    warmup_steps = int(args.warmup_steps)
     optimizer = torch.optim.AdamW(
         model.parameters(),
-        lr=args.learning_rate,
-        weight_decay=args.weight_decay,
+        lr=float(args.learning_rate),
+        weight_decay=float(args.weight_decay),
     )
     scheduler = torch.optim.lr_scheduler.LambdaLR(
         optimizer,
@@ -319,7 +323,7 @@ def experiment(
             get_batch=get_batch,
             scheduler=scheduler,
             loss_fn=lambda s_hat, a_hat, r_hat, s, a, r: torch.mean((a_hat - a)**2),
-            eval_fns=[eval_episodes(tar) for tar in env_targets],
+            eval_fns=[eval_episodes(env_tgt) for env_tgt in env_targets],
         )
     elif model_type == "bc":
         trainer = ActTrainer(
@@ -329,7 +333,7 @@ def experiment(
             get_batch=get_batch,
             scheduler=scheduler,
             loss_fn=lambda s_hat, a_hat, r_hat, s, a, r: torch.mean((a_hat - a)**2),
-            eval_fns=[eval_episodes(tar) for tar in env_targets],
+            eval_fns=[eval_episodes(env_tgt) for env_tgt in env_targets],
         )
     else:
         raise ValueError(f"ValueError: model_type = {model_type}")
@@ -343,11 +347,11 @@ def experiment(
         )
         # wandb.watch(model)  # wandb has some bug
 
-    for _iter in range(args.max_iters):
+    for _iter in range(int(args.max_iters)):
         outputs = trainer.train_iteration(
-            num_steps=args.num_steps_per_iter,
+            num_steps=int(args.num_steps_per_iter),
             iter_num=_iter + 1,
-            print_logs=True
+            print_logs=bool(args.verbose)
         )
         if log_to_wandb:
             wandb.log(outputs)
@@ -373,25 +377,25 @@ if __name__ == "__main__":
     # parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--cuda", type=str, default="0", help="CUDA device(s), e.g., 0 OR 0,1")
     # parser.add_argument("--log_to_wandb", "-w", type=bool, default=False)
-    parser.add_argument("-w", "--log_to_wandb", action="store_true", default=False)
+    parser.add_argument("--log_to_wandb", action="store_true", default=False)
 
     # Decision Transformer
     parser.add_argument("--mode", type=str, default="normal")  # normal for standard setting, delayed for sparse
     parser.add_argument("--model_type", type=str, default="dt")  # dt for decision transformer, bc for behavior cloning
     parser.add_argument("--K", type=int, default=20)
+    parser.add_argument("--max_iters", type=int, default=10)
+    parser.add_argument("--num_steps_per_iter", type=int, default=10000)
+    parser.add_argument("--num_eval_episodes", type=int, default=100)
     parser.add_argument("--pct_traj", type=float, default=1.)
     parser.add_argument("--batch_size", type=int, default=64)
+    parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--embed_dim", type=int, default=128)
     parser.add_argument("--n_layer", type=int, default=3)
     parser.add_argument("--n_head", type=int, default=1)
     parser.add_argument("--activation_function", type=str, default="relu")
     parser.add_argument("--dropout", type=float, default=0.1)
-    parser.add_argument("--learning_rate", "-lr", type=float, default=1e-4)
-    parser.add_argument("--weight_decay", "-wd", type=float, default=1e-4)
     parser.add_argument("--warmup_steps", type=int, default=10000)
-    parser.add_argument("--num_eval_episodes", type=int, default=100)
-    parser.add_argument("--max_iters", type=int, default=10)
-    parser.add_argument("--num_steps_per_iter", type=int, default=10000)
+    parser.add_argument("--weight_decay", type=float, default=1e-4)
 
     args = parser.parse_args()
     logger.info(args)
@@ -429,7 +433,8 @@ if __name__ == "__main__":
             logger.info(f"torch.cuda.current_device(): {torch.cuda.current_device()}")
             logger.info(f"torch.cuda.get_device_name(0): {torch.cuda.get_device_name(0)}")
 
-    experiment(exp_prefix=f"exp-gym-mujoco-{args.env}-{args.level}-{args.version}")
+    # run(exp_prefix=f"gym-mujoco-{args.env}-{args.level}-{args.version}")
+    run()
 
     timer_end = time.perf_counter()
     logger.info("Total Running Time: %.1f sec (%.1f min)" % (timer_end - timer_start, (timer_end - timer_start) / 60))

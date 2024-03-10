@@ -5,14 +5,15 @@ import torch
 def evaluate_episode(
         env,
         state_dim,
-        act_dim,
+        action_dim,
         model,
         max_ep_len=1000,
-        device="cuda",
+        # scale=1.0,
         target_reward=None,
-        mode="normal",
+        # mode="normal",
         state_mean=0.,
         state_std=1.,
+        device="cuda",
 ):
     model.eval()
     model.to(device=device)
@@ -20,12 +21,13 @@ def evaluate_episode(
     state_mean = torch.from_numpy(state_mean).to(device=device)
     state_std = torch.from_numpy(state_std).to(device=device)
 
-    state = env.reset()
+    # state = env.reset()  # obsolete Gym env
+    state, _ = env.reset()  # Tuple[observation (ObsType), info (dictionary)]
 
     # we keep all the histories on the device
     # note that the latest action and reward will be "padding"
     states = torch.from_numpy(state).reshape(1, state_dim).to(device=device, dtype=torch.float32)
-    actions = torch.zeros((0, act_dim), device=device, dtype=torch.float32)
+    actions = torch.zeros((0, action_dim), device=device, dtype=torch.float32)
     rewards = torch.zeros(0, device=device, dtype=torch.float32)
     target_reward = torch.tensor(target_reward, device=device, dtype=torch.float32)
     # sim_states = []
@@ -34,7 +36,7 @@ def evaluate_episode(
     for t in range(max_ep_len):
 
         # add padding
-        actions = torch.cat([actions, torch.zeros((1, act_dim), device=device)], dim=0)
+        actions = torch.cat([actions, torch.zeros((1, action_dim), device=device)], dim=0)
         rewards = torch.cat([rewards, torch.zeros(1, device=device)])
 
         action = model.get_action(
@@ -61,18 +63,18 @@ def evaluate_episode(
     return episode_reward, episode_length
 
 
-def evaluate_episode_rtg(
+def evaluate_episode_dt(
         env,
         state_dim,
-        act_dim,
+        action_dim,
         model,
         max_ep_len=1000,
         scale=1000.,
+        target_reward=None,
         state_mean=0.,
         state_std=1.,
-        device="cuda",
-        target_reward=None,
         mode="normal",
+        device="cuda",
 ):
     model.eval()
     model.to(device=device)
@@ -80,14 +82,15 @@ def evaluate_episode_rtg(
     state_mean = torch.from_numpy(state_mean).to(device=device)
     state_std = torch.from_numpy(state_std).to(device=device)
 
-    state = env.reset()
+    # state = env.reset()  # obsolete Gym env
+    state, _ = env.reset()  # Tuple[observation (ObsType), info (dictionary)]
     if mode == "noise":
         state = state + np.random.normal(0, 0.1, size=state.shape)
 
     # we keep all the histories on the device
     # note that the latest action and reward will be "padding"
     states = torch.from_numpy(state).reshape(1, state_dim).to(device=device, dtype=torch.float32)
-    actions = torch.zeros((0, act_dim), device=device, dtype=torch.float32)
+    actions = torch.zeros((0, action_dim), device=device, dtype=torch.float32)
     rewards = torch.zeros(0, device=device, dtype=torch.float32)
 
     ep_reward = target_reward
@@ -100,7 +103,7 @@ def evaluate_episode_rtg(
     for t in range(max_ep_len):
 
         # add padding
-        actions = torch.cat([actions, torch.zeros((1, act_dim), device=device)], dim=0)
+        actions = torch.cat([actions, torch.zeros((1, action_dim), device=device)], dim=0)
         rewards = torch.cat([rewards, torch.zeros(1, device=device)])
 
         action = model.get_action(
