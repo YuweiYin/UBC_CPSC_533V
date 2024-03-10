@@ -128,8 +128,8 @@ def experiment(
     if model_type == "bc":
         env_targets = env_targets[:1]  # since BC ignores target, no need for different evaluations
 
-    state_dim = env.observation_space.shape[0]
-    action_dim = env.action_space.shape[0]
+    state_dim = env.unwrapped.observation_space.shape[0]
+    action_dim = env.unwrapped.action_space.shape[0]
 
     # Load the offline dataset (trajectories)
     dataset_fp = os.path.join(args.save_dir, "parsed", f"{env_name}-{level}-v2.hdf5.pkl")
@@ -182,7 +182,7 @@ def experiment(
     # used to re-weight sampling, so we sample according to timesteps instead of trajectories
     p_sample = traj_lens[sorted_inds] / sum(traj_lens[sorted_inds])
 
-    def get_batch(bsz=256, max_len=K):
+    def get_batch(bsz: int = 256, max_len: int = K):
         batch_inds = np.random.choice(
             np.arange(num_trajectories),
             size=bsz,
@@ -190,19 +190,19 @@ def experiment(
             p=p_sample,  # re-weights so we sample according to timesteps
         )
 
-        s, a, r, d, rtg, _timesteps, _mask = [], [], [], [], [], [], []
+        s, a, r, d, rtg, _timesteps, _mask = [], [], [], [], [], [], []  # rtg: returns-to-go / rewards-to-go
         for i in range(bsz):
             _traj = trajectories[int(sorted_inds[batch_inds[i]])]
             si = random.randint(0, _traj["rewards"].shape[0] - 1)
 
             # get sequences from dataset
-            s.append(_traj["observations"][si:si + max_len].reshape(1, -1, state_dim))
-            a.append(_traj["actions"][si:si + max_len].reshape(1, -1, action_dim))
-            r.append(_traj["rewards"][si:si + max_len].reshape(1, -1, 1))
+            s.append(_traj["observations"][si: si + max_len].reshape(1, -1, state_dim))
+            a.append(_traj["actions"][si: si + max_len].reshape(1, -1, action_dim))
+            r.append(_traj["rewards"][si: si + max_len].reshape(1, -1, 1))
             if "terminals" in _traj:
-                d.append(_traj["terminals"][si:si + max_len].reshape(1, -1))
+                d.append(_traj["terminals"][si: si + max_len].reshape(1, -1))
             else:
-                d.append(_traj["dones"][si:si + max_len].reshape(1, -1))
+                d.append(_traj["dones"][si: si + max_len].reshape(1, -1))
             _timesteps.append(np.arange(si, si + s[-1].shape[1]).reshape(1, -1))
             _timesteps[-1][_timesteps[-1] >= max_ep_len] = max_ep_len-1  # padding cutoff
             rtg.append(discount_cumsum(_traj["rewards"][si:], gamma=1.)[:s[-1].shape[1] + 1].reshape(1, -1, 1))

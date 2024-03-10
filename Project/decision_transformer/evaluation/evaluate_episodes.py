@@ -8,7 +8,7 @@ def evaluate_episode(
         act_dim,
         model,
         max_ep_len=1000,
-        device='cuda',
+        device="cuda",
         target_reward=None,
         mode="normal",
         state_mean=0.,
@@ -70,9 +70,9 @@ def evaluate_episode_rtg(
         scale=1000.,
         state_mean=0.,
         state_std=1.,
-        device='cuda',
+        device="cuda",
         target_reward=None,
-        mode='normal',
+        mode="normal",
 ):
     model.eval()
     model.to(device=device)
@@ -81,7 +81,7 @@ def evaluate_episode_rtg(
     state_std = torch.from_numpy(state_std).to(device=device)
 
     state = env.reset()
-    if mode == 'noise':
+    if mode == "noise":
         state = state + np.random.normal(0, 0.1, size=state.shape)
 
     # we keep all the histories on the device
@@ -119,7 +119,7 @@ def evaluate_episode_rtg(
         states = torch.cat([states, cur_state], dim=0)
         rewards[-1] = reward
 
-        if mode != 'delayed':
+        if mode != "delayed":
             pred_reward = target_reward[0, -1] - (reward / scale)
         else:
             pred_reward = target_reward[0, -1]

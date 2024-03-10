@@ -10,9 +10,9 @@ class Reacher2dEnv(mujoco_env.MujocoEnv, utils.EzPickle):
         self.fingertip_sid = 0
         self.target_bid = 0
         curr_dir = os.path.dirname(os.path.abspath(__file__))
-        mujoco_env.MujocoEnv.__init__(self, curr_dir+'/assets/reacher_2d.xml', 15)
-        self.fingertip_sid = self.sim.model.site_name2id('fingertip')
-        self.target_bid = self.sim.model.body_name2id('target')
+        mujoco_env.MujocoEnv.__init__(self, curr_dir+"/assets/reacher_2d.xml", 15)
+        self.fingertip_sid = self.sim.model.site_name2id("fingertip")
+        self.target_bid = self.sim.model.body_name2id("target")
         utils.EzPickle.__init__(self)
 
     def step(self, action):
