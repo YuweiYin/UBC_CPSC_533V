@@ -25,8 +25,7 @@ class Trainer:
 
         # Training
         self.model.train()
-        # for _ in range(num_steps):
-        for _ in range(100):  # TODO debugging
+        for _ in range(num_steps):
             train_loss = self.train_step()
             train_losses.append(train_loss)
             if self.scheduler is not None:
