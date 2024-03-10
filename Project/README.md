@@ -116,19 +116,19 @@ The raw and parsed offline datasets are shared on
 ### Step 2: Run Gym-MuJoCo experiments
 
 ```bash
-python3 run_experiment.py
+python3 train_dt_offline.py
 ```
 
 Specify the Gym env and offline dataset level:
 
 ```bash
-python3 get_offline_data.py --env "hopper" --level "random"
+python3 train_dt_offline.py --env "hopper" --level "random"
 ```
 
 To show the training/evaluation logs and save logs to [wandb](https://wandb.ai/):
 
 ```bash
-python3 get_offline_data.py --env "hopper" --level "random" --verbose --log_to_wandb
+python3 train_dt_offline.py --env "hopper" --level "random" --verbose --log_to_wandb
 ```
 
 ---
