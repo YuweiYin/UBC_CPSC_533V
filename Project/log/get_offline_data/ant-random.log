@@ -1,0 +1,66 @@
+[03/09/2024 22:42:55 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='ant', level='random', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:56 - INFO - __main__] -   >>> Dataset: ant-random-v2.hdf5
+[03/09/2024 22:42:56 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 22:58:41 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 100 trajectories
+[03/09/2024 23:13:34 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 200 trajectories
+[03/09/2024 23:30:11 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 300 trajectories
+[03/09/2024 23:40:35 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 400 trajectories
+[03/09/2024 23:57:32 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 500 trajectories
+[03/10/2024 00:11:35 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 600 trajectories
+[03/10/2024 00:22:31 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 700 trajectories
+[03/10/2024 00:33:46 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 800 trajectories
+[03/10/2024 00:45:52 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 900 trajectories
+[03/10/2024 01:00:49 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1000 trajectories
+[03/10/2024 01:09:24 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1100 trajectories
+[03/10/2024 01:20:27 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1200 trajectories
+[03/10/2024 01:31:56 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1300 trajectories
+[03/10/2024 01:44:50 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1400 trajectories
+[03/10/2024 01:57:28 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1500 trajectories
+[03/10/2024 03:08:03 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1600 trajectories
+[03/10/2024 03:18:25 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1700 trajectories
+[03/10/2024 03:30:10 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1800 trajectories
+[03/10/2024 03:41:45 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 1900 trajectories
+[03/10/2024 03:51:11 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2000 trajectories
+[03/10/2024 04:01:53 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2100 trajectories
+[03/10/2024 04:10:56 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2200 trajectories
+[03/10/2024 04:23:13 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2300 trajectories
+[03/10/2024 04:33:57 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2400 trajectories
+[03/10/2024 04:44:00 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2500 trajectories
+[03/10/2024 04:52:29 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2600 trajectories
+[03/10/2024 05:04:48 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2700 trajectories
+[03/10/2024 05:12:45 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2800 trajectories
+[03/10/2024 05:22:58 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 2900 trajectories
+[03/10/2024 05:32:55 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3000 trajectories
+[03/10/2024 05:44:07 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3100 trajectories
+[03/10/2024 05:55:56 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3200 trajectories
+[03/10/2024 06:05:40 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3300 trajectories
+[03/10/2024 06:17:22 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3400 trajectories
+[03/10/2024 06:28:05 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3500 trajectories
+[03/10/2024 06:40:05 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3600 trajectories
+[03/10/2024 06:48:31 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3700 trajectories
+[03/10/2024 07:00:58 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3800 trajectories
+[03/10/2024 07:14:11 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 3900 trajectories
+[03/10/2024 07:25:49 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4000 trajectories
+[03/10/2024 07:38:21 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4100 trajectories
+[03/10/2024 07:49:07 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4200 trajectories
+[03/10/2024 07:59:22 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4300 trajectories
+[03/10/2024 08:12:18 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4400 trajectories
+[03/10/2024 08:21:34 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4500 trajectories
+[03/10/2024 08:33:07 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4600 trajectories
+[03/10/2024 08:42:34 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4700 trajectories
+[03/10/2024 08:50:02 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4800 trajectories
+[03/10/2024 09:01:02 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 4900 trajectories
+[03/10/2024 09:13:21 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5000 trajectories
+[03/10/2024 09:24:57 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5100 trajectories
+[03/10/2024 09:31:06 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5200 trajectories
+[03/10/2024 09:41:46 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5300 trajectories
+[03/10/2024 09:51:11 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5400 trajectories
+[03/10/2024 09:59:51 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5500 trajectories
+[03/10/2024 10:09:45 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5600 trajectories
+[03/10/2024 10:19:35 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5700 trajectories
+[03/10/2024 10:29:04 - INFO - __main__] -   >>> >>> Parsing >>> ant-random-v2.hdf5: 5800 trajectories
+[03/10/2024 10:32:59 - INFO - __main__] -   The number of collected samples: 999930
+[03/10/2024 10:32:59 - INFO - __main__] -   Trajectory rewards: mean = -58.072532653808594, std = 97.7589340209961, max = 106.18464660644531, min = -450.50653076171875
+[03/10/2024 10:32:59 - INFO - __main__] -   >>> Done ant-random-v2.hdf5. Save the trajectories to data/parsed/ant-random-v2.hdf5.pkl
+[03/10/2024 10:33:08 - INFO - __main__] -   Total Running Time: 39013.0 sec (650.2 min)

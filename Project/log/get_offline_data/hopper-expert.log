@@ -1,0 +1,18 @@
+[03/09/2024 22:42:55 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='hopper', level='expert', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Dataset: hopper-expert-v2.hdf5
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'metadata', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 22:43:40 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 100 trajectories
+[03/09/2024 22:44:23 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 200 trajectories
+[03/09/2024 22:45:06 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 300 trajectories
+[03/09/2024 22:45:48 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 400 trajectories
+[03/09/2024 22:46:25 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 500 trajectories
+[03/09/2024 22:47:02 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 600 trajectories
+[03/09/2024 22:47:41 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 700 trajectories
+[03/09/2024 22:48:18 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 800 trajectories
+[03/09/2024 22:48:56 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 900 trajectories
+[03/09/2024 22:49:34 - INFO - __main__] -   >>> >>> Parsing >>> hopper-expert-v2.hdf5: 1000 trajectories
+[03/09/2024 22:49:43 - INFO - __main__] -   The number of collected samples: 999494
+[03/09/2024 22:49:43 - INFO - __main__] -   Trajectory rewards: mean = 3511.357666015625, std = 328.5859680175781, max = 3759.083740234375, min = 1645.2764892578125
+[03/09/2024 22:49:43 - INFO - __main__] -   >>> Done hopper-expert-v2.hdf5. Save the trajectories to data/parsed/hopper-expert-v2.hdf5.pkl
+[03/09/2024 22:49:44 - INFO - __main__] -   Total Running Time: 409.1 sec (6.8 min)

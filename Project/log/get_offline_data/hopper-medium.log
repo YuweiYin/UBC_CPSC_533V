@@ -1,0 +1,29 @@
+[03/09/2024 22:42:55 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='hopper', level='medium', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Dataset: hopper-medium-v2.hdf5
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'metadata', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 22:43:16 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 100 trajectories
+[03/09/2024 22:43:35 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 200 trajectories
+[03/09/2024 22:43:53 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 300 trajectories
+[03/09/2024 22:44:13 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 400 trajectories
+[03/09/2024 22:44:34 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 500 trajectories
+[03/09/2024 22:44:52 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 600 trajectories
+[03/09/2024 22:45:10 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 700 trajectories
+[03/09/2024 22:45:29 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 800 trajectories
+[03/09/2024 22:45:48 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 900 trajectories
+[03/09/2024 22:46:05 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1000 trajectories
+[03/09/2024 22:46:23 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1100 trajectories
+[03/09/2024 22:46:40 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1200 trajectories
+[03/09/2024 22:46:59 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1300 trajectories
+[03/09/2024 22:47:16 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1400 trajectories
+[03/09/2024 22:47:33 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1500 trajectories
+[03/09/2024 22:47:51 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1600 trajectories
+[03/09/2024 22:48:06 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1700 trajectories
+[03/09/2024 22:48:22 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1800 trajectories
+[03/09/2024 22:48:40 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 1900 trajectories
+[03/09/2024 22:48:57 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 2000 trajectories
+[03/09/2024 22:49:12 - INFO - __main__] -   >>> >>> Parsing >>> hopper-medium-v2.hdf5: 2100 trajectories
+[03/09/2024 22:49:27 - INFO - __main__] -   The number of collected samples: 999906
+[03/09/2024 22:49:27 - INFO - __main__] -   Trajectory rewards: mean = 1422.05615234375, std = 378.9537048339844, max = 3222.360595703125, min = 315.8680114746094
+[03/09/2024 22:49:27 - INFO - __main__] -   >>> Done hopper-medium-v2.hdf5. Save the trajectories to data/parsed/hopper-medium-v2.hdf5.pkl
+[03/09/2024 22:49:28 - INFO - __main__] -   Total Running Time: 392.9 sec (6.5 min)

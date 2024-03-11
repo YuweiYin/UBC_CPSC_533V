@@ -2,6 +2,7 @@
 .idea
 .ipynb_checkpoints
 __pycache__/
+wandb/
 *.egg-info/
 *.pyc
 *.pyo

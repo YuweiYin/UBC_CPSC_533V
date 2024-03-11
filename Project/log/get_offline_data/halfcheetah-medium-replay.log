@@ -1,0 +1,10 @@
+[03/09/2024 22:42:55 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='halfcheetah', level='medium-replay', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Dataset: halfcheetah-medium-replay-v2.hdf5
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'metadata', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 22:43:40 - INFO - __main__] -   >>> >>> Parsing >>> halfcheetah-medium-replay-v2.hdf5: 100 trajectories
+[03/09/2024 22:44:28 - INFO - __main__] -   >>> >>> Parsing >>> halfcheetah-medium-replay-v2.hdf5: 200 trajectories
+[03/09/2024 22:44:29 - INFO - __main__] -   The number of collected samples: 202000
+[03/09/2024 22:44:29 - INFO - __main__] -   Trajectory rewards: mean = 3093.28564453125, std = 1680.6939697265625, max = 4985.1416015625, min = -638.4852905273438
+[03/09/2024 22:44:29 - INFO - __main__] -   >>> Done halfcheetah-medium-replay-v2.hdf5. Save the trajectories to data/parsed/halfcheetah-medium-replay-v2.hdf5.pkl
+[03/09/2024 22:44:29 - INFO - __main__] -   Total Running Time: 93.8 sec (1.6 min)

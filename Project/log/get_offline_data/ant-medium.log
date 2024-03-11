@@ -1,0 +1,20 @@
+[03/09/2024 22:42:55 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='ant', level='medium', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Dataset: ant-medium-v2.hdf5
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'metadata', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 23:48:06 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 100 trajectories
+[03/10/2024 00:50:11 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 200 trajectories
+[03/10/2024 01:51:30 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 300 trajectories
+[03/10/2024 03:47:56 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 400 trajectories
+[03/10/2024 04:39:38 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 500 trajectories
+[03/10/2024 05:33:06 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 600 trajectories
+[03/10/2024 06:23:54 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 700 trajectories
+[03/10/2024 07:16:58 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 800 trajectories
+[03/10/2024 08:05:02 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 900 trajectories
+[03/10/2024 08:56:57 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 1000 trajectories
+[03/10/2024 09:50:13 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 1100 trajectories
+[03/10/2024 10:38:47 - INFO - __main__] -   >>> >>> Parsing >>> ant-medium-v2.hdf5: 1200 trajectories
+[03/10/2024 10:39:39 - INFO - __main__] -   The number of collected samples: 999946
+[03/10/2024 10:39:39 - INFO - __main__] -   Trajectory rewards: mean = 3051.0625, std = 1180.586181640625, max = 4186.9755859375, min = -529.605712890625
+[03/10/2024 10:39:39 - INFO - __main__] -   >>> Done ant-medium-v2.hdf5. Save the trajectories to data/parsed/ant-medium-v2.hdf5.pkl
+[03/10/2024 10:39:48 - INFO - __main__] -   Total Running Time: 39412.7 sec (656.9 min)

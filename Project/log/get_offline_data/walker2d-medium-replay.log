@@ -1,0 +1,18 @@
+[03/09/2024 22:42:55 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='walker2d', level='medium-replay', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Dataset: walker2d-medium-replay-v2.hdf5
+[03/09/2024 22:42:55 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'metadata', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 22:42:57 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 100 trajectories
+[03/09/2024 22:43:04 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 200 trajectories
+[03/09/2024 22:43:13 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 300 trajectories
+[03/09/2024 22:43:27 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 400 trajectories
+[03/09/2024 22:43:40 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 500 trajectories
+[03/09/2024 22:43:52 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 600 trajectories
+[03/09/2024 22:44:07 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 700 trajectories
+[03/09/2024 22:44:19 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 800 trajectories
+[03/09/2024 22:44:40 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 900 trajectories
+[03/09/2024 22:45:12 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-medium-replay-v2.hdf5: 1000 trajectories
+[03/09/2024 22:45:36 - INFO - __main__] -   The number of collected samples: 302000
+[03/09/2024 22:45:36 - INFO - __main__] -   Trajectory rewards: mean = 682.7012939453125, std = 895.95556640625, max = 4132.00048828125, min = -50.196834564208984
+[03/09/2024 22:45:36 - INFO - __main__] -   >>> Done walker2d-medium-replay-v2.hdf5. Save the trajectories to data/parsed/walker2d-medium-replay-v2.hdf5.pkl
+[03/09/2024 22:45:37 - INFO - __main__] -   Total Running Time: 161.9 sec (2.7 min)

@@ -1,0 +1,18 @@
+[03/09/2024 22:42:56 - INFO - __main__] -   Namespace(verbose=False, seed=42, save_dir='data', task='parse', env='walker2d', level='expert', version='v2', max_len_trajectory=1000)
+[03/09/2024 22:42:56 - INFO - __main__] -   >>> There are 1 offline datasets to parse.
+[03/09/2024 22:42:56 - INFO - __main__] -   >>> Dataset: walker2d-expert-v2.hdf5
+[03/09/2024 22:42:56 - INFO - __main__] -   >>> Keys: <KeysViewHDF5 ['actions', 'infos', 'metadata', 'next_observations', 'observations', 'rewards', 'terminals', 'timeouts']>
+[03/09/2024 23:08:52 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 100 trajectories
+[03/09/2024 23:32:32 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 200 trajectories
+[03/09/2024 23:56:19 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 300 trajectories
+[03/10/2024 00:18:31 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 400 trajectories
+[03/10/2024 00:40:24 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 500 trajectories
+[03/10/2024 01:02:23 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 600 trajectories
+[03/10/2024 01:24:22 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 700 trajectories
+[03/10/2024 01:46:07 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 800 trajectories
+[03/10/2024 03:08:07 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 900 trajectories
+[03/10/2024 03:29:37 - INFO - __main__] -   >>> >>> Parsing >>> walker2d-expert-v2.hdf5: 1000 trajectories
+[03/10/2024 03:29:45 - INFO - __main__] -   The number of collected samples: 999214
+[03/10/2024 03:29:45 - INFO - __main__] -   Trajectory rewards: mean = 4920.5068359375, std = 136.3949432373047, max = 5011.693359375, min = 763.4161376953125
+[03/10/2024 03:29:45 - INFO - __main__] -   >>> Done walker2d-expert-v2.hdf5. Save the trajectories to data/parsed/walker2d-expert-v2.hdf5.pkl
+[03/10/2024 03:29:47 - INFO - __main__] -   Total Running Time: 13611.2 sec (226.9 min)
