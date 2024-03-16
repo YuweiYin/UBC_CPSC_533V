@@ -1,5 +1,7 @@
 # UBC CPSC 533V (2023W2) Project
 
+* [Project Proposal](./docs/UBC_CPSC_533V-Project_Proposal.pdf)
+
 ## Environment (Linux; macOS)
 
 ### Miniconda3
@@ -85,13 +87,15 @@ We download and parse the offline data of four [MuJoCo](https://gymnasium.farama
   * Action Space: `Box(-1.0, 1.0, (3,), float32)`
   * Observation Space: `Box(-inf, inf, (11,), float64)`
   * import: `gymnasium.make("Hopper-v4")`
-* [Ant](https://gymnasium.farama.org/environments/mujoco/ant/)
-  * Action Space: `Box(-1.0, 1.0, (8,), float32)`
-  * Observation Space: `Box(-inf, inf, (27,), float64)`
-  * import: `gymnasium.make("Ant-v4")`
+<!-- * [Ant](https://gymnasium.farama.org/environments/mujoco/ant/) -->
+  <!-- * Action Space: `Box(-1.0, 1.0, (8,), float32)` -->
+  <!-- * Observation Space: `Box(-inf, inf, (27,), float64)` -->
+  <!-- * import: `gymnasium.make("Ant-v4")` -->
 
-Each task has five different types (levels) of offline data ([URLs file](./data/data_infos.py)):
-`"random"`, `"medium"`, `"expert"`, `"medium-replay"`, and `"medium-expert"`.
+<!-- Each task has five different types (levels) of offline data ([URLs file](./data/data_infos.py)): -->
+<!-- `"random"`, `"medium"`, `"expert"`, `"medium-replay"`, and `"medium-expert"`. -->
+
+Each task has three different types (levels) of offline data ([URLs file](./data/data_infos.py)): `"random"`, `"medium"`, and `"expert"`
 
 The offline data is collected using `v2` version env. Our experiments will be taken in the `v4`version env 
 (to avoid using buggy code in `mujoco-py` and `d4rl`). Despite the version mismatch,
