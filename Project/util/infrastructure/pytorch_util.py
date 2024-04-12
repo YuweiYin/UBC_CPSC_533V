@@ -1,9 +1,6 @@
-from typing import Union
-
 import torch
 from torch import nn
-
-Activation = Union[str, nn.Module]
+from typing import Union
 
 
 _str_to_activation = {
@@ -15,6 +12,33 @@ _str_to_activation = {
     "softplus": nn.Softplus(),
     "identity": nn.Identity(),
 }
+Activation = Union[str, nn.Module]
+device = torch.device("cpu")
+
+
+# def init_gpu(use_gpu=True, gpu_id=0):
+def init_gpu(dev=torch.device("cpu")):
+    global device
+    # if torch.cuda.is_available() and use_gpu:
+    #     device = torch.device("cuda:" + str(gpu_id))
+    #     print("Using GPU id {}".format(gpu_id))
+    # else:
+    #     device = torch.device("cpu")
+    #     print("GPU not detected. Defaulting to CPU.")
+
+    device = dev
+
+
+def set_device(gpu_id):
+    torch.cuda.set_device(gpu_id)
+
+
+def from_numpy(*args, **kwargs):
+    return torch.from_numpy(*args, **kwargs).float().to(device)
+
+
+def to_numpy(tensor):
+    return tensor.to("cpu").detach().numpy()
 
 
 def build_mlp(
@@ -52,28 +76,3 @@ def build_mlp(
     layers.append(nn.Linear(in_size, output_size))
     layers.append(output_activation)
     return nn.Sequential(*layers)
-
-
-device = None
-
-
-def init_gpu(use_gpu=True, gpu_id=0):
-    global device
-    if torch.cuda.is_available() and use_gpu:
-        device = torch.device("cuda:" + str(gpu_id))
-        print("Using GPU id {}".format(gpu_id))
-    else:
-        device = torch.device("cpu")
-        print("GPU not detected. Defaulting to CPU.")
-
-
-def set_device(gpu_id):
-    torch.cuda.set_device(gpu_id)
-
-
-def from_numpy(*args, **kwargs):
-    return torch.from_numpy(*args, **kwargs).float().to(device)
-
-
-def to_numpy(tensor):
-    return tensor.to("cpu").detach().numpy()
