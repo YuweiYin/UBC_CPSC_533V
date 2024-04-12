@@ -1,7 +1,5 @@
 # UBC CPSC 533V (2023W2) Project
 
-* [Project Proposal](./docs/UBC_CPSC_533V-Project_Proposal.pdf)
-
 ## Environment (Linux; macOS)
 
 ### Miniconda3
@@ -32,6 +30,11 @@ conda activate 533v
 
 ```bash
 pip install -r requirements.txt
+```
+
+```bash
+# brew install swig  # MacOSX
+pip install box2d-py
 ```
 
 ### MuJoCo Env and Offline Data
@@ -69,33 +72,33 @@ Each data point has `"actions", "observations", "next_observations", "rewards", 
 and each trajectory (RL data path) will be a chunk of the whole trajectory.
 
 
-## Run the code
+## Run Decision Transformer
 
 ### Step 1: Get the offline RL data
 
 We download and parse the offline data of four [MuJoCo](https://gymnasium.farama.org/environments/mujoco/) tasks:
 
-* [Half Cheetah](https://gymnasium.farama.org/environments/mujoco/half_cheetah/):
+* [**Half Cheetah**](https://gymnasium.farama.org/environments/mujoco/half_cheetah/):
   * Action Space: `Box(-1.0, 1.0, (6,), float32)`
   * Observation Space: `Box(-inf, inf, (17,), float64)`
   * import: `gymnasium.make("HalfCheetah-v4")`
-* [Walker2D](https://gymnasium.farama.org/environments/mujoco/walker2d/)
+* [**Walker2D**](https://gymnasium.farama.org/environments/mujoco/walker2d/)
   * Action Space: `Box(-1.0, 1.0, (6,), float32)`
   * Observation Space: `Box(-inf, inf, (17,), float64)`
   * import: `gymnasium.make("Walker2d-v4")`
-* [Hopper](https://gymnasium.farama.org/environments/mujoco/hopper/)
+* [**Hopper**](https://gymnasium.farama.org/environments/mujoco/hopper/)
   * Action Space: `Box(-1.0, 1.0, (3,), float32)`
   * Observation Space: `Box(-inf, inf, (11,), float64)`
   * import: `gymnasium.make("Hopper-v4")`
-<!-- * [Ant](https://gymnasium.farama.org/environments/mujoco/ant/) -->
-  <!-- * Action Space: `Box(-1.0, 1.0, (8,), float32)` -->
-  <!-- * Observation Space: `Box(-inf, inf, (27,), float64)` -->
-  <!-- * import: `gymnasium.make("Ant-v4")` -->
+* [**Ant**](https://gymnasium.farama.org/environments/mujoco/ant/)
+  * Action Space: `Box(-1.0, 1.0, (8,), float32)`
+  * Observation Space: `Box(-inf, inf, (27,), float64)`
+  * import: `gymnasium.make("Ant-v4")`
+  * **NOTE**: the observation dimension of the offline Ant data is 111 instead of 27, so this env is deprecated.
 
-<!-- Each task has five different types (levels) of offline data ([URLs file](./data/data_infos.py)): -->
-<!-- `"random"`, `"medium"`, `"expert"`, `"medium-replay"`, and `"medium-expert"`. -->
-
-Each task has three different types (levels) of offline data ([URLs file](./data/data_infos.py)): `"random"`, `"medium"`, and `"expert"`
+Each task has five different types (levels) of offline data ([URLs file](./data/data_infos.py)):
+`"random"`, `"medium"`, `"expert"`, `"medium-replay"`, and `"medium-expert"`.
+We use `"random"`, `"medium"`, and `"expert"`.
 
 The offline data is collected using `v2` version env. Our experiments will be taken in the `v4`version env 
 (to avoid using buggy code in `mujoco-py` and `d4rl`). Despite the version mismatch,
@@ -133,6 +136,36 @@ To show the training/evaluation logs and save logs to [wandb](https://wandb.ai/)
 
 ```bash
 python3 train_dt_offline.py --env "hopper" --level "random" --verbose --log_to_wandb
+```
+
+## Training RL Policy on MuJoCo V4 Env
+
+### Actor Critic (AC)
+
+```bash
+python3 train_ac.py --exp_name "AC_Training" --env_name "HalfCheetah-v4" --seed 42 \
+  --ep_len 200 --n_iter 200 --num_agent_train_steps_per_iter 100 \
+  --num_critic_updates_per_agent_update 1 --num_actor_updates_per_agent_update 1 \
+  --num_target_updates 10 --num_grad_steps_per_target_update 10 \
+  --batch_size 1000 --eval_batch_size 400 --train_batch_size 1000 \
+  --n_layers 5 --size 64 \
+  --discount 0.99 --learning_rate 5e-3 \
+  --scalar_log_freq 10
+# TODO: --video_log_freq 10 --save_params
+```
+
+### Soft Actor Critic (SAC)
+
+```bash
+python3 train_sac.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" --seed 42 \
+  --ep_len 200 --n_iter 200 --num_agent_train_steps_per_iter 100 \
+  --num_critic_updates_per_agent_update 10 --num_actor_updates_per_agent_update 10 \
+  --actor_update_frequency 1 --critic_target_update_frequency 1 \
+  --batch_size 1000 --eval_batch_size 400 --train_batch_size 256 \
+  --n_layers 5 --size 64 \
+  --discount 0.99 --learning_rate 5e-3 --init_temperature 1.0 \
+  --scalar_log_freq 10
+# TODO: --video_log_freq 10 --save_params
 ```
 
 ---

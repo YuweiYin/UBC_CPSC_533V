@@ -23,3 +23,13 @@ pytest-instafail==0.3.0
 sphinx
 sphinx_rtd_theme
 numpydoc
+tensorboard
+tensorboardX
+matplotlib
+ipython
+moviepy
+pyvirtualdisplay
+opencv-python
+ipdb
+pyglet
+swig
