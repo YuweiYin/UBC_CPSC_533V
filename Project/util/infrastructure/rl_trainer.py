@@ -262,7 +262,7 @@ class RLTrainer(object):
                 self.total_env_steps += env_steps_this_batch
             else:
                 if itr == 1 or done:
-                    obs, _ = self.env.reset(seed=42)
+                    obs, _ = self.env.reset()
                     episode_stats["reward"].append(episode_return)
                     episode_stats["ep_len"].append(episode_step)
                     episode_step = 0
@@ -551,7 +551,7 @@ class RLTrainer(object):
         terminals = []
         timeouts = []
 
-        obs, _ = self.env.reset(seed=42)
+        obs, _ = self.env.reset()
         for _ in range(max_n_traj):
             for _ in range(max_traj_len):
                 # self.env.render()

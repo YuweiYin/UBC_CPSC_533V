@@ -35,7 +35,7 @@ def perform_actions(
         actions
 ):
     # ob = env.reset()
-    ob, _ = env.reset(seed=42)
+    ob, _ = env.reset()
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
     for ac in actions:
@@ -70,7 +70,7 @@ def sample_trajectory(
         render_mode=("rgb_array")
 ):
     # ob = env.reset()
-    ob, _ = env.reset(seed=42)
+    ob, _ = env.reset()
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
     while True:
@@ -227,7 +227,7 @@ def eval_trajectory(
         render_mode=("rgb_array")
 ):
     # ob = env.reset()
-    ob, _ = env.reset(seed=42)
+    ob, _ = env.reset()
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
     while True:
@@ -296,7 +296,7 @@ def sample_random_trajectory(
         render_mode=("rgb_array")
 ):
     # ob = env.reset()
-    ob, _ = env.reset(seed=42)
+    ob, _ = env.reset()
     obs, acs, rewards, next_obs, terminals, image_obs = [], [], [], [], [], []
     steps = 0
     while True:
