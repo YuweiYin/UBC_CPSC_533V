@@ -43,13 +43,17 @@ class RLTrainer(object):
         seed = self.params["seed"]
         random.seed(seed)
         np.random.seed(seed)
-        torch.manual_seed(seed)
-        ptu.init_gpu(
-            use_gpu=not self.params["no_gpu"],
-            gpu_id=self.params["which_gpu"]
-        )
+        if torch.cuda.is_available():
+            torch.manual_seed(seed)
+            torch.cuda.manual_seed_all(seed)
 
-        # Environment
+        # ptu.init_gpu(
+        #     use_gpu=not self.params["no_gpu"],
+        #     gpu_id=self.params["which_gpu"]
+        # )
+        ptu.init_gpu(
+            dev=self.params["device"],
+        )
 
         # Make the gym environment
         register_custom_envs()

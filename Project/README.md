@@ -143,7 +143,8 @@ python3 train_dt_offline.py --env "hopper" --level "random" --verbose --log_to_w
 ### Actor Critic (AC)
 
 ```bash
-python3 train_ac.py --exp_name "AC_Training" --env_name "HalfCheetah-v4" --seed 42 \
+python3 train_ac.py --exp_name "AC_Training" --env_name "HalfCheetah-v4" \
+  --seed 42 --cuda 0 --use_gpu --verbose \
   --ep_len 200 --n_iter 200 --num_agent_train_steps_per_iter 100 \
   --num_critic_updates_per_agent_update 1 --num_actor_updates_per_agent_update 1 \
   --num_target_updates 10 --num_grad_steps_per_target_update 10 \
@@ -157,7 +158,8 @@ python3 train_ac.py --exp_name "AC_Training" --env_name "HalfCheetah-v4" --seed 
 ### Soft Actor Critic (SAC)
 
 ```bash
-python3 train_sac.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" --seed 42 \
+python3 train_sac.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" \
+  --seed 42 --cuda 0 --use_gpu --verbose \
   --ep_len 200 --n_iter 200 --num_agent_train_steps_per_iter 100 \
   --num_critic_updates_per_agent_update 10 --num_actor_updates_per_agent_update 10 \
   --actor_update_frequency 1 --critic_target_update_frequency 1 \
