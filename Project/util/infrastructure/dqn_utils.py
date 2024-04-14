@@ -8,8 +8,10 @@ import numpy as np
 import torch
 from torch import nn
 import torch.optim as optim
-import gym
-from gym.envs.registration import register
+# import gym
+# from gym.envs.registration import register
+import gymnasium as gym
+from gymnasium.envs.registration import register
 
 from ..infrastructure.atari_wrappers import wrap_deepmind
 

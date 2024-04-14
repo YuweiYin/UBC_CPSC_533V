@@ -1,5 +1,6 @@
 from collections import OrderedDict
-import gym
+# import gym
+import gymnasium as gym
 import torch
 
 from .base_agent import BaseAgent

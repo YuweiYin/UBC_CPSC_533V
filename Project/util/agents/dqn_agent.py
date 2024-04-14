@@ -12,7 +12,7 @@ class DQNAgent(object):
         self.agent_params = agent_params
         self.batch_size = agent_params["batch_size"]
         # import ipdb; ipdb.set_trace()
-        self.last_obs, _ = self.env.reset(seed=42)
+        self.last_obs, _ = self.env.reset()
 
         self.num_actions = agent_params["ac_dim"]
         self.learning_starts = agent_params["learning_starts"]  # start training after `learning_starts` iter steps
@@ -79,7 +79,7 @@ class DQNAgent(object):
 
         # If taking this step resulted in done, reset the env (and the latest observation)
         if done:
-            self.last_obs, _ = self.env.reset(seed=42)
+            self.last_obs, _ = self.env.reset()
 
     def sample(self, batch_size):
         if self.replay_buffer.can_sample(self.batch_size):

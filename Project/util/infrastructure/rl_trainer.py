@@ -5,14 +5,15 @@ import sys
 import pdb
 import time
 import random
+import logging
 
 import h5py
 import numpy as np
 import torch
-import gym
-from gym import wrappers
-# import gymnasium as gym
-# from gymnasium import wrappers
+# import gym
+# from gym import wrappers
+import gymnasium as gym
+from gymnasium import wrappers
 
 from ..infrastructure import pytorch_util as ptu
 from ..infrastructure.atari_wrappers import ReturnWrapper
@@ -55,12 +56,33 @@ class RLTrainer(object):
             dev=self.params["device"],
         )
 
+        self.env_name = str(self.params["env_name"])
+        # "HalfCheetah-v4", "Hopper-v4", "Walker2d-v4"
+        # If the model achieves medium_level/expert_level average eval rewards,
+        #     then save it as medium-level/expert-level policy
+        #     and use it to generate medium-level/expert-level offline datasets/trajectories
+        match self.env_name:
+            case "HalfCheetah-v4":
+                self.random_level = [50.0, 200.0]
+                self.medium_level = [3000.0, 7000.0]
+                self.expert_level = [8000.0, 12000.0]
+            case "Hopper-v4":
+                self.random_level = [50.0, 200.0]
+                self.medium_level = [1400.0, 1800.0]
+                self.expert_level = [2800.0, 3200]
+            case "Walker2d-v4":
+                self.random_level = [50.0, 200.0]
+                self.medium_level = [1700.0, 2300.0]
+                self.expert_level = [3500.0, 4500.0]
+            case _:
+                raise ValueError(f"ValueError: env_name == {self.env_name}")
+
         # Make the gym environment
         register_custom_envs()
         if self.params["agent_class"] is SACAgent:
-            self.env = gym.make(self.params["env_name"], max_episode_steps=self.params["ep_len"])
+            self.env = gym.make(self.env_name, max_episode_steps=self.params["ep_len"])
         else:
-            self.env = gym.make(self.params["env_name"])
+            self.env = gym.make(self.env_name)
         if self.params["video_log_freq"] > 0:
             self.episode_trigger = lambda episode: episode % self.params["video_log_freq"] == 0
         else:
@@ -75,8 +97,8 @@ class RLTrainer(object):
             self.mean_episode_reward = -float("nan")
             self.best_mean_episode_reward = -float("inf")
         if "non_atari_colab_env" in self.params and self.params["video_log_freq"] > 0:
-            self.env = wrappers.RecordVideo(self.env, os.path.join(self.params["logdir"], "gym"),
-                                            episode_trigger=self.episode_trigger)
+            self.env = wrappers.RecordVideo(
+                self.env, os.path.join(self.params["logdir"], "gym"), episode_trigger=self.episode_trigger)
             self.mean_episode_reward = -float("nan")
             self.best_mean_episode_reward = -float("inf")
 
@@ -84,7 +106,7 @@ class RLTrainer(object):
         self.env.reset(seed=seed)
 
         # import plotting (locally if "obstacles" env)
-        if not (self.params["env_name"] == "obstacles-cs285-v0"):
+        if self.env_name != "obstacles-cs285-v0":
             import matplotlib
             matplotlib.use("Agg")
 
@@ -119,6 +141,23 @@ class RLTrainer(object):
         # Agent
         agent_class = self.params["agent_class"]
         self.agent = agent_class(self.env, self.params["agent_params"])
+        assert isinstance(self.agent.actor, torch.nn.Module) and isinstance(self.agent.critic, torch.nn.Module)
+
+        if self.params["load_ckpt"]:
+            # Load the pretrained actor and critic models if they exist
+            self.actor_ckpt = self.params["actor_ckpt"]  # The checkpoint path of Actor model
+            if isinstance(self.actor_ckpt, str) and len(self.actor_ckpt) > 0 and os.path.isfile(self.actor_ckpt):
+                actor_state = torch.load(self.actor_ckpt)
+                self.agent.actor.load_state_dict(actor_state)
+            self.critic_ckpt = self.params["critic_ckpt"]  # The checkpoint path of Critic model
+            if isinstance(self.critic_ckpt, str) and len(self.critic_ckpt) > 0 and os.path.isfile(self.critic_ckpt):
+                critic_state = torch.load(self.critic_ckpt)
+                self.agent.critic.load_state_dict(critic_state)
+
+        # The directory to save checkpoints
+        self.ckpt_dir = os.path.join(self.params["logdir"], self.params["ckpt_dir"])
+        if not os.path.isdir(self.ckpt_dir):
+            os.makedirs(self.ckpt_dir, exist_ok=True)
 
         # Other parameters
         self.log_video = False
@@ -210,9 +249,6 @@ class RLTrainer(object):
                 else:
                     self.perform_logging(itr, paths, eval_policy, train_video_paths, all_logs)
 
-                if self.params["save_params"]:
-                    self.agent.save("{}/agent_itr_{}.pt".format(self.params["logdir"], itr))
-
     def run_sac_training_loop(
             self,
             n_iter,
@@ -255,6 +291,7 @@ class RLTrainer(object):
                 self.log_metrics = False
 
             use_batch_size = self.params["batch_size"]
+            train_video_paths = None
             if itr == 0:
                 use_batch_size = self.params["batch_size_initial"]
                 # print("Sampling seed steps for training...")
@@ -302,8 +339,6 @@ class RLTrainer(object):
                 print("Logging...")
                 self.perform_sac_logging(itr, episode_stats, eval_policy, train_video_paths, all_logs)
                 episode_stats = {"reward": [], "ep_len": []}
-                if self.params["save_params"]:
-                    self.agent.save("{}/agent_itr_{}.pt".format(self.params["logdir"], itr))
 
     def collect_training_trajectories(
             self,
@@ -372,6 +407,17 @@ class RLTrainer(object):
 
         return all_logs
 
+    def save_agent(self, itr: int, level: str = "random"):
+        if isinstance(self.agent, torch.nn.Module):
+            self.agent.save("{}/{}_{}---agent_itr_{}.pt".format(
+                self.ckpt_dir, self.env_name, level, itr))
+        if hasattr(self.agent, "actor") and isinstance(self.agent.actor, torch.nn.Module):
+            self.agent.actor.save("{}/{}_{}---agent_actor_itr_{}.pt".format(
+                self.ckpt_dir, self.env_name, level, itr))
+        if hasattr(self.agent, "critic") and isinstance(self.agent.critic, torch.nn.Module):
+            self.agent.critic.save("{}/{}_{}---agent_critic_itr_{}.pt".format(
+                self.ckpt_dir, self.env_name, level, itr))
+
     def perform_dqn_logging(self, all_logs):
         last_log = all_logs[-1]
 
@@ -404,7 +450,6 @@ class RLTrainer(object):
         for key, value in logs.items():
             print("{} : {}".format(key, value))
             self.logger.log_scalar(value, key, self.agent.t)
-        # print("Done logging.\n")
 
         self.logger.flush()
 
@@ -468,9 +513,21 @@ class RLTrainer(object):
             for key, value in logs.items():
                 print("{} : {}".format(key, value))
                 self.logger.log_scalar(value, key, itr)
-            # print("Done logging.\n")
 
             self.logger.flush()
+
+            # Save models
+            avg_eval_rewards = float(np.mean(eval_returns))
+            if self.params["save_params"]:
+                if self.random_level[0] <= avg_eval_rewards <= self.random_level[1]:
+                    logging.info(f"Save the random-level agent: itr = {itr}; avg_eval_rewards = {avg_eval_rewards}")
+                    self.save_agent(itr=itr, level="random")
+                if self.medium_level[0] <= avg_eval_rewards <= self.medium_level[1]:
+                    logging.info(f"Save the medium-level agent: itr = {itr}; avg_eval_rewards = {avg_eval_rewards}")
+                    self.save_agent(itr=itr, level="medium")
+                if self.expert_level[0] <= avg_eval_rewards <= self.expert_level[1]:
+                    logging.info(f"Save the expert-level agent: itr = {itr}; avg_eval_rewards = {avg_eval_rewards}")
+                    self.save_agent(itr=itr, level="expert")
 
     def perform_sac_logging(self, itr, stats, eval_policy, train_video_paths, all_logs):
         last_log = all_logs[-1]
@@ -535,9 +592,21 @@ class RLTrainer(object):
                 except Exception as e:
                     print(e)
                     pdb.set_trace()
-            # print("Done logging.\n\n")
 
             self.logger.flush()
+
+            # Save models
+            avg_eval_rewards = float(np.mean(eval_returns))
+            if self.params["save_params"]:
+                if self.random_level[0] <= avg_eval_rewards <= self.random_level[1]:
+                    logging.info(f"Save the random-level agent: itr = {itr}; avg_eval_rewards = {avg_eval_rewards}")
+                    self.save_agent(itr=itr, level="random")
+                if self.medium_level[0] <= avg_eval_rewards <= self.medium_level[1]:
+                    logging.info(f"Save the medium-level agent: itr = {itr}; avg_eval_rewards = {avg_eval_rewards}")
+                    self.save_agent(itr=itr, level="medium")
+                if self.expert_level[0] <= avg_eval_rewards <= self.expert_level[1]:
+                    logging.info(f"Save the expert-level agent: itr = {itr}; avg_eval_rewards = {avg_eval_rewards}")
+                    self.save_agent(itr=itr, level="expert")
 
     def collect_offline_dataset(
             self,
@@ -547,6 +616,7 @@ class RLTrainer(object):
             level: str = "random",
             max_n_traj: int = 1000000,
             max_traj_len: int = 150,
+            use_pretrained: bool = False,
     ):
         actions = []
         observations = []

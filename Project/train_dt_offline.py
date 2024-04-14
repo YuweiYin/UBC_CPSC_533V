@@ -49,8 +49,8 @@ def get_dataset_dict(
             ds_dict[env_name]["gymnasium_env"] = f"Walker2d-v4"  # f"Walker2d-{args.version}"
         elif env_name == "hopper":
             ds_dict[env_name]["gymnasium_env"] = f"Hopper-v4"  # f"Hopper-{args.version}"
-        elif env_name == "ant":
-            ds_dict[env_name]["gymnasium_env"] = f"Ant-v4"  # f"Ant-{args.version}"
+        # elif env_name == "ant":
+        #     ds_dict[env_name]["gymnasium_env"] = f"Ant-v4"  # f"Ant-{args.version}"
         else:
             raise ValueError(f"ValueError: env_name = {env_name}")
 
@@ -112,11 +112,11 @@ def run(
         max_ep_len = 1000
         env_targets = [5000.0, 2500.0]
         scale = 1000.0
-    elif env_name == "ant":
-        env = gym.make(gymnasium_env, render_mode=render_mode)
-        max_ep_len = 1000
-        env_targets = [4200.0, 2100.0]
-        scale = 1000.0
+    # elif env_name == "ant":
+    #     env = gym.make(gymnasium_env, render_mode=render_mode)
+    #     max_ep_len = 1000
+    #     env_targets = [4200.0, 2100.0]
+    #     scale = 1000.0
     # elif env_name == "reacher2d":
     #     from decision_transformer.envs.reacher_2d import Reacher2dEnv
     #
@@ -126,6 +126,22 @@ def run(
     #     scale = 10.0
     else:
         raise NotImplementedError
+
+    """
+    Reward statistics of the offline datasets used in Decision Transformer (provided by d4rl):
+        HalfCheetah-v2:
+            random: min = -525.9597, max = -85.358215 (mean = -288.79712, std = 80.43068)
+            medium: min = -310.2342, max = 5309.3794 (mean = 4770.335, std = 355.7504)
+            expert: min = 2045.8278, max = 11252.035 (mean = 10656.426, std = 441.6827)
+        Hopper-v2:
+            random: min = 2.9301534, max = 292.5542 (mean = 18.398905, std = 17.45116)
+            medium: min = 315.868, max = 3222.3606 (mean = 1422.0562, std = 378.9537)
+            expert: min = 1645.2765, max = 3759.0837 (mean = 3511.3577, std = 328.58597)
+        Walker2D-v2:
+            random: min = -17.005825, max = 75.03457 (mean = 1.871351, std = 5.8127255)
+            medium: min = -6.605672, max = 4226.94 (mean = 2852.0884, std = 1095.4434)
+            expert: min = 763.41614, max = 5011.6934 (mean = 4920.507, std = 136.39494)
+    """
 
     assert scale > 0.0 and int(scale) > 0, ValueError(f"ValueError: scale = {scale}")
     if model_type == "bc":
@@ -375,11 +391,11 @@ if __name__ == "__main__":
     parser.add_argument("--seed", type=int, default=42, help="Random seed of all modules")
     parser.add_argument("--save_dir", type=str, default="data", help="The directory to save data")
     parser.add_argument("--env", type=str, default="hopper",
-                        help="Gym env name: \"halfcheetah\", \"walker2d\", \"hopper\", \"ant\"")
+                        help="Gym env name: \"halfcheetah\", \"hopper\", \"walker2d\"")
     parser.add_argument("--level", type=str, default="random",
                         help="Dataset level: \"random\", \"medium\", \"expert\", \"medium-replay\", \"medium-expert\"")
     parser.add_argument("--version", type=str, default="v2",
-                        help="Offline data version: \"v2\", \"v1\", \"v0\"")
+                        help="Offline data version: \"v2\", \"v1\", \"v0\" (and \"v4\")")
     # parser.add_argument("--device", type=str, default="cuda")
     parser.add_argument("--cuda", type=str, default="0", help="CUDA device(s), e.g., 0 OR 0,1")
     # parser.add_argument("--log_to_wandb", "-w", type=bool, default=False)
@@ -394,7 +410,7 @@ if __name__ == "__main__":
     parser.add_argument("--max_iters", type=int, default=10)
     parser.add_argument("--num_steps_per_iter", type=int, default=10000)
     parser.add_argument("--num_eval_episodes", type=int, default=100)
-    parser.add_argument("--pct_traj", type=float, default=1.)
+    parser.add_argument("--pct_traj", type=float, default=1.0)
     parser.add_argument("--batch_size", type=int, default=64)
     parser.add_argument("--learning_rate", type=float, default=1e-4)
     parser.add_argument("--embed_dim", type=int, default=128)
@@ -417,8 +433,10 @@ if __name__ == "__main__":
     np.random.seed(args.seed)
     set_seed(args.seed)
 
-    args.env_list = ["halfcheetah", "hopper", "walker2d", "ant"]
-    args.levels = ["random", "medium", "expert", "medium-replay", "medium-expert"]
+    # args.env_list = ["halfcheetah", "hopper", "walker2d", "ant"]
+    # args.levels = ["random", "medium", "expert", "medium-replay", "medium-expert"]
+    args.env_list = ["halfcheetah", "hopper", "walker2d"]
+    args.levels = ["random", "medium", "expert"]
 
     # CUDA
     os.environ["CUDA_VISIBLE_DEVICES"] = args.cuda

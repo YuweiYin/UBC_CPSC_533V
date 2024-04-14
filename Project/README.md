@@ -7,7 +7,8 @@
 ```bash
 # https://docs.conda.io/projects/miniconda/en/latest/
 mkdir -p ~/miniconda3
-curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
+#curl https://repo.anaconda.com/miniconda/Miniconda3-latest-MacOSX-arm64.sh -o ~/miniconda3/miniconda.sh
+wget https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh -O ~/miniconda3/miniconda.sh
 bash ~/miniconda3/miniconda.sh -b -u -p ~/miniconda3
 rm -rf ~/miniconda3/miniconda.sh
 
@@ -152,7 +153,6 @@ python3 train_ac.py --exp_name "AC_Training" --env_name "HalfCheetah-v4" \
   --n_layers 5 --size 64 \
   --discount 0.99 --learning_rate 5e-3 \
   --scalar_log_freq 10
-# TODO: --video_log_freq 10 --save_params
 ```
 
 ### Soft Actor Critic (SAC)
@@ -167,7 +167,6 @@ python3 train_sac.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" \
   --n_layers 5 --size 64 \
   --discount 0.99 --learning_rate 5e-3 --init_temperature 1.0 \
   --scalar_log_freq 10
-# TODO: --video_log_freq 10 --save_params
 ```
 
 ---

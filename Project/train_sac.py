@@ -36,6 +36,9 @@ class SACTrainer(object):
 
         self.agent_params = {**computation_graph_args, **estimate_advantage_args, **train_args}
 
+        self.actor_ckpt = params["actor_ckpt"]
+        self.critic_ckpt = params["critic_ckpt"]
+
         self.params = params
         self.params["agent_class"] = SACAgent
         self.params["agent_params"] = self.agent_params
@@ -59,11 +62,17 @@ def main():
     parser.add_argument("--cuda", type=str, default="0", help="CUDA device(s), e.g., 0 OR 0,1")
     parser.add_argument("--use_gpu", action="store_true", default=False, help="Use GPU or not")
 
+    parser.add_argument("-a", "--actor_ckpt", type=str, default="", help="The checkpoint path of Actor model")
+    parser.add_argument("-c", "--critic_ckpt", type=str, default="", help="The checkpoint path of Critic model")
+    parser.add_argument("--ckpt_dir", type=str, default="ckpt", help="The directory to save checkpoints")
+    parser.add_argument("--load_ckpt", action="store_true", default=False)
+    parser.add_argument("--save_params", action="store_true", default=False)
+
     # parser.add_argument("--env_name", type=str, default="CartPole-v0")
     parser.add_argument(
         "--env_name",
         default="HalfCheetah-v4",
-        choices=("HalfCheetah-v4", "Walker2d-v4", "Hopper-v4", "Ant-v4")
+        choices=("HalfCheetah-v4", "Hopper-v4", "Walker2d-v4")
     )
     parser.add_argument("--ep_len", type=int, default=200)
     parser.add_argument("--exp_name", type=str, default="SAC_Training")
@@ -84,12 +93,10 @@ def main():
     parser.add_argument("--n_layers", "-l", type=int, default=2)
     parser.add_argument("--size", "-s", type=int, default=64)
 
-    parser.add_argument("--no_gpu", "-ngpu", action="store_true")
+    parser.add_argument("--no_gpu", "-ngpu", action="store_true", default=False)
     parser.add_argument("--which_gpu", "-gpu_id", default=0)
     parser.add_argument("--video_log_freq", type=int, default=-1)
     parser.add_argument("--scalar_log_freq", type=int, default=10)
-
-    parser.add_argument("--save_params", action="store_true")
 
     args = parser.parse_args()
 
