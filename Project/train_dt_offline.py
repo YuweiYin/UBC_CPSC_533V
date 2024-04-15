@@ -88,8 +88,9 @@ def run(
     log_to_wandb = bool(args.log_to_wandb)
 
     env_name, level, version = str(args.env), str(args.level), str(args.version)
+    exp_name_suffix = str(args.exp_name_suffix)
     model_type = str(args.model_type)
-    group_name = f"{exp_prefix}-{env_name}-{level}-{version}"
+    group_name = f"{exp_prefix}-{env_name}-{level}-{version}{exp_name_suffix}"
     exp_prefix = f"{group_name}-{random.randint(int(1e5), int(1e6) - 1)}"
 
     ds_dict = get_dataset_dict(env_name)
@@ -400,6 +401,8 @@ if __name__ == "__main__":
     parser.add_argument("--cuda", type=str, default="0", help="CUDA device(s), e.g., 0 OR 0,1")
     # parser.add_argument("--log_to_wandb", "-w", type=bool, default=False)
     parser.add_argument("--log_to_wandb", action="store_true", default=False)
+    parser.add_argument("--exp_name_suffix", type=str, default="",
+                        help="The suffix of the experiment name (for wandb)")
 
     # Decision Transformer
     parser.add_argument("--render_mode", type=str, default="",
