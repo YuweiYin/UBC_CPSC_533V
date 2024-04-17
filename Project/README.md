@@ -164,6 +164,8 @@ python3 train_sac.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" \
   --scalar_log_freq 10
 ```
 
+* Training [log](./log/train_sac.log) (Averaged Evaluation Reward: `Eval_AverageReturn`)
+
 ## Collect V4 Offline Datasets using the Trained Policy
 
 ```bash
