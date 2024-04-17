@@ -616,7 +616,6 @@ class RLTrainer(object):
             level: str = "random",
             max_n_traj: int = 1000000,
             max_traj_len: int = 150,
-            use_pretrained: bool = False,
     ):
         actions = []
         observations = []

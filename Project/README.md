@@ -91,11 +91,6 @@ We download and parse the offline data of four [MuJoCo](https://gymnasium.farama
   * Action Space: `Box(-1.0, 1.0, (3,), float32)`
   * Observation Space: `Box(-inf, inf, (11,), float64)`
   * import: `gymnasium.make("Hopper-v4")`
-* [**Ant**](https://gymnasium.farama.org/environments/mujoco/ant/)
-  * Action Space: `Box(-1.0, 1.0, (8,), float32)`
-  * Observation Space: `Box(-inf, inf, (27,), float64)`
-  * import: `gymnasium.make("Ant-v4")`
-  * **NOTE**: the observation dimension of the offline Ant data is 111 instead of 27, so this env is deprecated.
 
 Each task has five different types (levels) of offline data ([URLs file](./data/data_infos.py)):
 `"random"`, `"medium"`, `"expert"`, `"medium-replay"`, and `"medium-expert"`.
@@ -167,6 +162,22 @@ python3 train_sac.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" \
   --n_layers 5 --size 64 \
   --discount 0.99 --learning_rate 5e-3 --init_temperature 1.0 \
   --scalar_log_freq 10
+```
+
+## Collect V4 Offline Datasets using the Trained Policy
+
+```bash
+python3 collect_offline_data.py --exp_name "SAC_Training" --env_name "HalfCheetah-v4" \
+  --seed 42 --cuda 0 --use_gpu --verbose \
+  --ep_len 200 --n_iter 200 --num_agent_train_steps_per_iter 100 \
+  --num_critic_updates_per_agent_update 10 --num_actor_updates_per_agent_update 10 \
+  --actor_update_frequency 1 --critic_target_update_frequency 1 \
+  --batch_size 1000 --eval_batch_size 400 --train_batch_size 256 \
+  --n_layers 5 --size 64 \
+  --discount 0.99 --learning_rate 5e-3 --init_temperature 1.0 \
+  --scalar_log_freq 10 \
+  --load_ckpt --actor_ckpt "/path/to/actor_ckpt/" --critic_ckpt "/path/to/critic_ckpt/" \
+  --level "ALL" --max_n_traj 1000000 --max_traj_len 150 --data_dir "data/v4_datasets/"
 ```
 
 ---
