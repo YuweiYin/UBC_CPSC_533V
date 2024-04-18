@@ -1,5 +1,7 @@
 # UBC CPSC 533V (2023W2) Project
 
+* [Project Report](./docs/UBC_CPSC_533V-Project_Report.pdf)
+
 ## Environment (Linux; macOS)
 
 ### Miniconda3
