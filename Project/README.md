@@ -1,7 +1,5 @@
 # UBC CPSC 533V (2023W2) Project
 
-* [Project Report](./docs/UBC_CPSC_533V-Project_Report.pdf)
-
 ## Environment (Linux; macOS)
 
 ### Miniconda3
@@ -183,5 +181,9 @@ python3 collect_offline_data.py --exp_name "SAC_Training" --env_name "HalfCheeta
   --load_ckpt --actor_ckpt "/path/to/actor_ckpt/" --critic_ckpt "/path/to/critic_ckpt/" \
   --level "ALL" --max_n_traj 1000000 --max_traj_len 150 --data_dir "data/v4_datasets/"
 ```
+
+---
+
+* [Project Report](./docs/UBC_CPSC_533V-Project_Report.pdf)
 
 ---
